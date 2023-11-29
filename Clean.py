@@ -82,11 +82,17 @@ del df["SSN"]
 # one hot encode Payment_Behaviour
 # map Credit_Score
 
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('clean_data.csv')
+df['Age'] = df['Age'].astype('Int64')
+df = df.replace('', np.nan)
+df = df.dropna(subset=['Annual_Income'])
 
 def fill_group(group, col_name):
     mode = group[col_name].mode()
-
-    group[col_name] = group[col_name].replace('', mode[0])
+    group[col_name] = group[col_name].fillna(mode[0])
 
     return group
 
@@ -95,18 +101,9 @@ def fill_missing_values(df, col_name):
     filled_df = grouped.apply(fill_group, col_name=col_name)
     return filled_df
 
-columns = ['Age', 'Occupation', 'Annual_Income', 'Monthly_Inhand_Salary']
+columns = ['Age', 'Occupation', 'Monthly_Inhand_Salary']
 for i in columns:
     print(i)
     df_filled = fill_missing_values(df, col_name= i)
 
-# Display the filled DataFrame
-print(df_filled)
-
-
-
-
-
-df.to_csv("filled_data.csv")
-
-
+df_filled.to_csv("filled_data.csv")
