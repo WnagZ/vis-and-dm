@@ -2,26 +2,11 @@ import numpy as np
 
 
 def coordinate_descent(equation, argmin, x_0, max_iter=100):
-    a = 1
-    b = 1
-    c = 1
+    x = (1, 1, 1)
+    f = 0.5 * x[0] ** 4 - x[0] * x[1] + x[1] ** 2 + x[1] * x[2] + x[2] ** 2
     for i in range(max_iter):
-        for x in range(1, 4):
-            if x == 1:
-                a = a
-            if x == 2:
-                b = b
-            if x == 3:
-                c = c
-
-            f = 0.5 * a ** 4 - a * b + b ** 2 + b * c + c ** 2
-
-            if x == 1:
-                a = argmin_xi(f)
-            if x == 2:
-                b = argmin_xi(f)
-            if x == 3:
-                c = argmin_xi(f)
+        for counter in range(3):
+            x[counter] = argmin_xi(f)
 
 
 
