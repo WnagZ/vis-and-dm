@@ -1,9 +1,13 @@
 import pandas as pd
+import csv
 import re
 
 path = 'all_data.csv'
+path1 = 'clean_data.csv'
+path2 = 'filled_data.csv'
 df = pd.read_csv(path, sep=';', lineterminator='\r')
-df.drop(columns=['ID', 'Name'])
+#df.drop(columns=['ID', 'Name'], inplace = True)
+#df.drop(columns=['Unnamed: 0'], inplace = True)
 
 
 def KeepAlphabets(text):
@@ -78,4 +82,28 @@ del df["SSN"]
 # one hot encode Payment_Behaviour
 # map Credit_Score
 
-df.to_csv("clean_data.csv")
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('clean_data.csv')
+df['Age'] = df['Age'].astype('Int64')
+df = df.replace('', np.nan)
+df = df.dropna(subset=['Annual_Income'])
+
+def fill_group(group, col_name):
+    mode = group[col_name].mode()
+    group[col_name] = group[col_name].fillna(mode[0])
+
+    return group
+
+def fill_missing_values(df, col_name):
+    grouped = df.groupby('Customer_ID')
+    filled_df = grouped.apply(fill_group, col_name=col_name)
+    return filled_df
+
+columns = ['Age', 'Occupation', 'Monthly_Inhand_Salary']
+for i in columns:
+    print(i)
+    df_filled = fill_missing_values(df, col_name= i)
+
+df_filled.to_csv("filled_data.csv")
