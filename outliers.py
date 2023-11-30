@@ -33,4 +33,18 @@ for i in columns:
     print(i)
     df_filled = fill_missing_values(df, col_name= i)
 
+# Clean Num_of_Delayed_Payment by Justin
+upper = df['Num_of_Delayed_Payment'].mean()+(2*df['Num_of_Delayed_Payment'].std())
+
+for x in range(len(df['Num_of_Delayed_Payment'])):
+    if df['Num_of_Delayed_Payment'][x] > upper:
+        df['Num_of_Delayed_Payment'][x] = int(upper)
+
+# Clean Num_Credit_Inquiries by Justin
+upper = df['Num_Credit_Inquiries'].mean()+(2*df['Num_Credit_Inquiries'].std())
+
+for x in range(len(df['Num_Credit_Inquiries'])):
+    if df['Num_Credit_Inquiries'][x] > upper:
+        df['Num_Credit_Inquiries'][x] = int(upper)
+
 df_filled.to_csv("filled_data.csv")
