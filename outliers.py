@@ -48,3 +48,53 @@ for x in range(len(df['Num_Credit_Inquiries'])):
         df['Num_Credit_Inquiries'][x] = int(upper)
 
 df_filled.to_csv("filled_data.csv")
+
+
+def convert_to_years_months(duration):
+    if isinstance(duration, float):
+        return duration
+    years = 0
+    months = 0
+    if 'Years' in duration:
+        years = int(duration.split('Years')[0])
+    if 'Months' in duration:
+        months = int(duration.split('Months')[0].split('Yearsand')[-1])
+    return years + months / 12
+
+df['Credit_History_Age_float'] = df['Credit_History_Age'].apply(convert_to_years_months)
+
+
+def replace_outliers(df, col_name):
+    def replace_group_outliers(group):
+        mean = group[col_name].mean()
+        std = group[col_name].std()
+        mode = group[col_name].mode()
+        threshold = 2 * std  # Define your threshold here, based on standard deviation
+
+        group.loc[group[col_name] != mode[0], col_name] = pd.NA
+        return group
+
+    return df.groupby('Customer_ID').apply(replace_group_outliers)
+
+
+
+df = replace_outliers(df, 'Total_EMI_per_month')
+print(df['Total_EMI_per_month'])
+
+def fill_group(group, col_name):
+    mode = group[col_name].mode()
+
+    # Replace outliers with mode
+    group[col_name] = group[col_name].fillna(mode[0])
+
+    return group
+
+# Function to fill missing values and handle outliers
+def fill_missing_values(df, col_name):
+    grouped = df.groupby('Customer_ID')
+    filled_df = grouped.apply(fill_group, col_name=col_name)
+    return filled_df
+
+
+df = fill_missing_values(df, 'Total_EMI_per_month')
+
