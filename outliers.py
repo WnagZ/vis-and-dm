@@ -1,10 +1,11 @@
 import pandas as pd
 
-df = pd.read_csv("filled_data.csv")
+df = pd.read_csv("clean_data.csv")
 
-columns = ['Num_Credit_Card', 'Interest_Rate', 'Num_of_Loan']
+columns = ['Num_Credit_Card', 'Interest_Rate', 'Num_of_Loan', 'Num_Bank_Accounts']
 for col in columns:
-    df[col] = df[col].astype(int)
+    print(col)
+    # df[col] = df[col].astype(int)
     df[col] = pd.to_numeric(df[col], errors='coerce')
 
 df.loc[df['Num_Credit_Card'] >= 12, 'Num_Credit_Card'] = pd.NA  #the maximum value of correct credit cards is 11,
@@ -15,6 +16,9 @@ df.loc[df['Interest_Rate'] >= 35, 'Interest_Rate'] = pd.NA  #the maximum value o
 
 df.loc[df['Num_of_Loan'] >= 10, 'Num_of_Loan'] = pd.NA  #the maximum value of correct loans is 9,
                                                                 # all other higher ones are outliers
+
+df.loc[(df["Num_Bank_Accounts"] < 0) | (df["Num_Bank_Accounts"] > 10), 'Num_Bank_Accounts'] = pd.NA
+
 
 #Delay from due date seems to be clean
 
@@ -94,6 +98,34 @@ def fill_missing_values(df, col_name):
     grouped = df.groupby('Customer_ID')
     filled_df = grouped.apply(fill_group, col_name=col_name)
     return filled_df
+
+# Clean age
+customer_IDs = df[(df['Age'].isna()) | (df['Age'] > 100) | (df['Age'] < 0)]['Customer_ID'].values
+
+# get real age by customer id
+for id in customer_IDs:
+    realAge = 0
+    try:
+        realAge = df.loc[(df['Customer_ID'] == id) & (df['Age'].notna()) & (df['Age'] < 100) & (df['Age'] > 0)]['Age'].values[-1]
+    except IndexError:
+        continue
+    # fill missing value
+    df.loc[(df['Customer_ID'] == id) & ((df['Age'].isna()) | (df['Age'] > 100) | (df['Age'] < 0)), ['Age']] = realAge
+
+# Clean Monthly_Inhand_Salary
+customer_IDs = df[df['Monthly_Inhand_Salary'].isna()]['Customer_ID'].values
+
+# get real age by customer id
+for id in customer_IDs:
+    realIncome = 0
+    try:
+        realIncome = df.loc[(df['Customer_ID'] == id) & (df['Monthly_Inhand_Salary'].notna())]['Monthly_Inhand_Salary'].values[-1]
+    except IndexError:
+        continue
+    # fill missing value
+    df.loc[(df['Customer_ID'] == id) & (df['Monthly_Inhand_Salary'].notna()), 'Monthly_Inhand_Salary'] = realIncome
+
+
 
 
 df = fill_missing_values(df, 'Total_EMI_per_month')
