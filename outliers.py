@@ -35,7 +35,7 @@ def fill_missing_values(df, col_name):
 
 for i in columns:
     print(i)
-    df_filled = fill_missing_values(df, col_name= i)
+    df = fill_missing_values(df, col_name= i)
 
 # Clean Num_of_Delayed_Payment by Justin
 upper = df['Num_of_Delayed_Payment'].mean()+(2*df['Num_of_Delayed_Payment'].std())
@@ -50,8 +50,6 @@ upper = df['Num_Credit_Inquiries'].mean()+(2*df['Num_Credit_Inquiries'].std())
 for x in range(len(df['Num_Credit_Inquiries'])):
     if df['Num_Credit_Inquiries'][x] > upper:
         df['Num_Credit_Inquiries'][x] = int(upper)
-
-df_filled.to_csv("filled_data.csv")
 
 
 def convert_to_years_months(duration):
@@ -85,6 +83,7 @@ def replace_outliers(df, col_name):
 df = replace_outliers(df, 'Total_EMI_per_month')
 print(df['Total_EMI_per_month'])
 
+
 def fill_group(group, col_name):
     mode = group[col_name].mode()
 
@@ -98,6 +97,9 @@ def fill_missing_values(df, col_name):
     grouped = df.groupby('Customer_ID')
     filled_df = grouped.apply(fill_group, col_name=col_name)
     return filled_df
+
+
+df = fill_missing_values(df, 'Total_EMI_per_month')
 
 # Clean age
 customer_IDs = df[(df['Age'].isna()) | (df['Age'] > 100) | (df['Age'] < 0)]['Customer_ID'].values
@@ -123,10 +125,7 @@ for id in customer_IDs:
     except IndexError:
         continue
     # fill missing value
-    df.loc[(df['Customer_ID'] == id) & (df['Monthly_Inhand_Salary'].notna()), 'Monthly_Inhand_Salary'] = realIncome
+    df.loc[(df['Customer_ID'] == id) & (df['Monthly_Inhand_Salary'].isna()), 'Monthly_Inhand_Salary'] = realIncome
 
 
-
-
-df = fill_missing_values(df, 'Total_EMI_per_month')
-
+df.to_csv("filled_data.csv")
