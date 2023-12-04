@@ -1,11 +1,10 @@
 import pandas as pd
 
-df = pd.read_csv("clean_data.csv")
+df = pd.read_csv("filled_data.csv")
 
-columns = ['Num_Credit_Card', 'Interest_Rate', 'Num_of_Loan', 'Num_Bank_Accounts']
+columns = ['Num_Credit_Card', 'Interest_Rate', 'Num_of_Loan']
 for col in columns:
-    print(col)
-    # df[col] = df[col].astype(int)
+    #df[col] = df[col].astype(int)
     df[col] = pd.to_numeric(df[col], errors='coerce')
 
 df.loc[df['Num_Credit_Card'] >= 12, 'Num_Credit_Card'] = pd.NA  #the maximum value of correct credit cards is 11,
@@ -16,6 +15,9 @@ df.loc[df['Interest_Rate'] >= 35, 'Interest_Rate'] = pd.NA  #the maximum value o
 
 df.loc[df['Num_of_Loan'] >= 10, 'Num_of_Loan'] = pd.NA  #the maximum value of correct loans is 9,
                                                                 # all other higher ones are outliers
+
+df.loc[df['Num_of_Loan'] < 0, 'Num_of_Loan'] = pd.NA
+df.loc[df['Num_Credit_Card'] < 0, 'Num_Credit_Card'] = pd.NA
 
 df.loc[(df["Num_Bank_Accounts"] < 0) | (df["Num_Bank_Accounts"] > 10), 'Num_Bank_Accounts'] = pd.NA
 
@@ -33,6 +35,7 @@ def fill_missing_values(df, col_name):
     filled_df = grouped.apply(fill_group, col_name=col_name)
     return filled_df
 
+columns = ['Num_Credit_Card', 'Interest_Rate', 'Num_of_Loan']
 for i in columns:
     print(i)
     df = fill_missing_values(df, col_name= i)
@@ -84,7 +87,7 @@ def replace_outliers(df, col_name):
 
 
 df = replace_outliers(df, 'Total_EMI_per_month')
-print(df['Total_EMI_per_month'])
+#print(df['Total_EMI_per_month'])
 
 
 def fill_group(group, col_name):
