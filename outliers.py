@@ -45,18 +45,18 @@ upper = df['Num_of_Delayed_Payment'].mean()+(2*df['Num_of_Delayed_Payment'].std(
 
 for x in range(len(df['Num_of_Delayed_Payment'])):
     if df['Num_of_Delayed_Payment'][x] > upper:
-        df['Num_of_Delayed_Payment'][x] = int(upper)
+        df['Num_of_Delayed_Payment'][x] = ""
 
-df['Num_of_Delayed_Payment'].fillna(df['Num_of_Delayed_Payment'].mode()[0], inplace=True)
+df = fill_missing_values(df, 'Num_of_Delayed_Payment')
 
 # Clean Num_Credit_Inquiries by Justin
 upper = df['Num_Credit_Inquiries'].mean()+(2*df['Num_Credit_Inquiries'].std())
 
 for x in range(len(df['Num_Credit_Inquiries'])):
     if df['Num_Credit_Inquiries'][x] > upper:
-        df['Num_Credit_Inquiries'][x] = int(upper)
+        df['Num_Credit_Inquiries'][x] = ""
 
-df['Num_Credit_Inquiries'].fillna(df['Num_Credit_Inquiries'].mode()[0], inplace=True)
+df = fill_missing_values(df, 'Num_Credit_Inquiries')
 
 def convert_to_years_months(duration):
     if isinstance(duration, float):
