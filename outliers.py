@@ -1,8 +1,8 @@
 import pandas as pd
 
-df = pd.read_csv("filled_data.csv")
+df = pd.read_csv("clean_data.csv")
 
-columns = ['Num_Credit_Card', 'Interest_Rate', 'Num_of_Loan']
+columns = ['Num_Credit_Card', 'Interest_Rate', 'Num_of_Loan', 'Num_Bank_Accounts']
 for col in columns:
     #df[col] = df[col].astype(int)
     df[col] = pd.to_numeric(df[col], errors='coerce')
