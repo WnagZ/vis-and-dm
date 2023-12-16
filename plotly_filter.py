@@ -16,7 +16,7 @@ df['Grouped_Age'] = pd.cut(df['Age'], bins=income_bins, labels=income_labels)
 
 # Sample data for each dropdown
 occupation_options = []
-occupations = df['Occupation'].unique().tolist()
+occupations = df['Occupation'].unique().dropna().tolist()
 occupations.sort()
 for occupation in occupations:
     if not pd.isna(occupation):
