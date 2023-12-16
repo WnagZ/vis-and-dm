@@ -16,7 +16,7 @@ df['Grouped_Age'] = pd.cut(df['Age'], bins=income_bins, labels=income_labels)
 
 # Sample data for each dropdown
 occupation_options = []
-occupations = df['Occupation'].unique().dropna().tolist()
+occupations = df['Occupation'].dropna().unique().tolist()
 occupations.sort()
 for occupation in occupations:
     if not pd.isna(occupation):
@@ -24,14 +24,14 @@ for occupation in occupations:
 
 age_options = []
 
-age_groups = df['Grouped_Age'].unique().dropna().tolist()
+age_groups = df['Grouped_Age'].dropna().unique().tolist()
 age_groups.sort()
 for age_group in age_groups:
     if not pd.isna(age_group):
         age_options.append({'label': age_group, 'value': age_group})
 
 income_options = []
-income_groups = df['Grouped_Annual_Income'].unique().dropna().tolist()
+income_groups = df['Grouped_Annual_Income'].dropna().unique().tolist()
 income_groups.sort()
 
 for income_group in income_groups:
