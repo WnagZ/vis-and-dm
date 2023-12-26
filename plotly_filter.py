@@ -1,8 +1,11 @@
+import math
+
 import pandas as pd
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import plotly.graph_objects as go
+import plotly.express as px
 
 app = dash.Dash(__name__)
 df = pd.read_csv('filled_data.csv')
@@ -40,32 +43,48 @@ for income_group in income_groups:
 
 # Options for the category filter dropdown
 category_options = [
-    {'label': 'Occupation', 'value': 'occupation'},
-    {'label': 'Age Group', 'value': 'age'},
-    {'label': 'Income Group', 'value': 'income'}
+    {'label': 'Occupation', 'value': 'Occupation'},
+    {'label': 'Age Group', 'value': 'Grouped_Age'},
+    {'label': 'Income Group', 'value': 'Grouped_Annual_Income'}
 ]
 
 app.layout = html.Div([
-    html.H1("Dynamic Dropdowns with Plotly Dash"),
+    #Left block
+    html.Div([
 
-    # Category Dropdown
-    html.Label('Select Category'),
-    dcc.Dropdown(
-        id='category-dropdown',
-        options=category_options,
-        value='occupation'
-    ),
+    ], style={'width': '33%', 'display': 'inline-block'}),
 
-    # Dynamic Dropdown based on Category selection
-    html.Label('Select Filter'),
-    dcc.Dropdown(
-        id='dynamic-dropdown',
-        multi=True,
-        value=df['Occupation'].unique().tolist()
-    ),
+    #Middle block
+    html.Div([
+        html.H1("Dynamic Dropdowns with Plotly Dash"),
+            # Category Dropdown
+            html.Label('Select Category'),
+            dcc.Dropdown(
+                id='category-dropdown',
+                options=category_options,
+                value='Occupation'
+            ),
 
-    # Output div for displaying selected values
-    html.Div(id='output')
+            # Dynamic Dropdown based on Category selection
+            html.Label('Select Filter'),
+            dcc.Dropdown(
+                id='dynamic-dropdown',
+                multi=True,
+                value=df['Occupation'].unique().tolist()
+            ),
+
+            # Scatterpolar graph for displaying selected values
+            dcc.Graph(id='scatterpolar'),
+
+            # Parcoods graph for displaying selected values
+            dcc.Graph(id='parcoods'),
+    ], style={'width': '33%', 'display': 'inline-block'}),
+
+    # Right block
+    html.Div([
+
+    ], style={'width': '33%', 'display': 'inline-block'}),
+
 ])
 
 
@@ -76,11 +95,11 @@ app.layout = html.Div([
     [Input('category-dropdown', 'value')]
 )
 def update_dynamic_dropdown_options(selected_category):
-    if selected_category == 'occupation':
+    if selected_category == 'Occupation':
         options = occupation_options
-    elif selected_category == 'age':
+    elif selected_category == 'Grouped_Age':
         options = age_options
-    elif selected_category == 'income':
+    elif selected_category == 'Grouped_Annual_Income':
         options = income_options
     else:
         options = []
@@ -91,32 +110,37 @@ def update_dynamic_dropdown_options(selected_category):
 
 # Callback to update the output div based on the second dropdown selection
 @app.callback(
-    Output('output', 'children'),
-    [Input('dynamic-dropdown', 'value')]
+    [Output('scatterpolar', 'figure'),
+     Output('parcoods', 'figure')],
+    [Input('dynamic-dropdown', 'value'),
+     Input('category-dropdown', 'value')]
 )
-def update_output(selected_values):
-    return f"You have selected: {', '.join(selected_values)}"
+def update_output(selected_values, selected_category):
 
-
-def update_spider_graph(selected_values):
-    fig = go.Figure()
     categories = ['Credit_Utilization_Ratio', 'Total_EMI_per_month', 'Outstanding_Debt',
                   'Interest_Rate', 'Num_of_Loan', 'Delay_from_due_date', 'Num_of_Delayed_Payment']
-
+    pcp_list = []
+    fig = go.Figure()
     for y in selected_values:
         meantable = []
         for x in categories:
-            small_df = df[df['Occupation'] == y]
+            small_df = df[df[selected_category] == y]
             calculated_mean = small_df[x].mean()
-            meantable.append(calculated_mean)
-
+            meantable.append(math.log(round(calculated_mean)))
         fig.add_trace(go.Scatterpolar(
             r=meantable,
             theta=categories,
             name=y
         ))
-    return fig.show()
 
+    # fig2 = go.Figure(data=
+    # go.Parcoords(
+    #     line_color='blue',
+    #     dimensions=pcp_list
+    # ))
+    fig2 = go.Figure()
+    return fig, fig2
+    # return f"You have selected: {', '.join(selected_values)}"
 
 if __name__ == '__main__':
     app.run_server(debug=True)
