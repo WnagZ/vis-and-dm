@@ -6,6 +6,8 @@ from dash import dcc, html
 from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 import plotly.express as px
+from plotly.subplots import make_subplots
+import math
 
 app = dash.Dash(__name__)
 df = pd.read_csv('filled_data.csv')
@@ -132,13 +134,13 @@ def update_output(selected_values, selected_category):
             theta=categories,
             name=y
         ))
+        pcp_list.append(dict(range=[min(meantable), max(meantable)], label=x, values=[small_df[x]]))
 
-    # fig2 = go.Figure(data=
-    # go.Parcoords(
-    #     line_color='blue',
-    #     dimensions=pcp_list
-    # ))
-    fig2 = go.Figure()
+    fig2 = go.Figure(data=
+    go.Parcoords(
+        line_color='blue',
+        dimensions=pcp_list
+    ))
     return fig, fig2
     # return f"You have selected: {', '.join(selected_values)}"
 
