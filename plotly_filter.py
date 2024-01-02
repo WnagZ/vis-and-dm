@@ -134,7 +134,13 @@ def update_output(selected_values, selected_category):
             theta=categories,
             name=y
         ))
-        pcp_list.append(dict(range=[min(meantable), max(meantable)], label=x, values=[small_df[x]]))
+
+    for x in categories:
+        allrows = []
+        for y in selected_values:
+            small_df = df[df[selected_category] == y]
+            allrows.append(math.log(round(small_df[x]))) #here help me broer
+        pcp_list.append(dict(range=[min(allrows), max(allrows)], label=x, values=allrows))
 
     fig2 = go.Figure(data=
     go.Parcoords(
@@ -142,7 +148,6 @@ def update_output(selected_values, selected_category):
         dimensions=pcp_list
     ))
     return fig, fig2
-    # return f"You have selected: {', '.join(selected_values)}"
 
 if __name__ == '__main__':
     app.run_server(debug=True)
