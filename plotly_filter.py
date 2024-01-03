@@ -51,35 +51,35 @@ category_options = [
 ]
 
 app.layout = html.Div([
-    #Left block
+    # Left block
     html.Div([
 
     ], style={'width': '33%', 'display': 'inline-block'}),
 
-    #Middle block
+    # Middle block
     html.Div([
         html.H1("Dynamic Dropdowns with Plotly Dash"),
-            # Category Dropdown
-            html.Label('Select Category'),
-            dcc.Dropdown(
-                id='category-dropdown',
-                options=category_options,
-                value='Occupation'
-            ),
+        # Category Dropdown
+        html.Label('Select Category'),
+        dcc.Dropdown(
+            id='category-dropdown',
+            options=category_options,
+            value='Occupation'
+        ),
 
-            # Dynamic Dropdown based on Category selection
-            html.Label('Select Filter'),
-            dcc.Dropdown(
-                id='dynamic-dropdown',
-                multi=True,
-                value=df['Occupation'].unique().tolist()
-            ),
+        # Dynamic Dropdown based on Category selection
+        html.Label('Select Filter'),
+        dcc.Dropdown(
+            id='dynamic-dropdown',
+            multi=True,
+            value=df['Occupation'].unique().tolist()
+        ),
 
-            # Scatterpolar graph for displaying selected values
-            dcc.Graph(id='scatterpolar'),
+        # Scatterpolar graph for displaying selected values
+        dcc.Graph(id='scatterpolar'),
 
-            # Parcoods graph for displaying selected values
-            dcc.Graph(id='parcoods'),
+        # Pcp graph for displaying selected values
+        dcc.Graph(id='pcp'),
     ], style={'width': '33%', 'display': 'inline-block'}),
 
     # Right block
@@ -113,41 +113,46 @@ def update_dynamic_dropdown_options(selected_category):
 # Callback to update the output div based on the second dropdown selection
 @app.callback(
     [Output('scatterpolar', 'figure'),
-     Output('parcoods', 'figure')],
+     Output('pcp', 'figure')],
     [Input('dynamic-dropdown', 'value'),
      Input('category-dropdown', 'value')]
 )
 def update_output(selected_values, selected_category):
+    fields = ['Credit_Utilization_Ratio', 'Total_EMI_per_month', 'Outstanding_Debt',
+              'Interest_Rate', 'Num_of_Loan', 'Delay_from_due_date', 'Num_of_Delayed_Payment']
 
-    categories = ['Credit_Utilization_Ratio', 'Total_EMI_per_month', 'Outstanding_Debt',
-                  'Interest_Rate', 'Num_of_Loan', 'Delay_from_due_date', 'Num_of_Delayed_Payment']
-    pcp_list = []
-    fig = go.Figure()
-    for y in selected_values:
-        meantable = []
-        for x in categories:
-            small_df = df[df[selected_category] == y]
-            calculated_mean = small_df[x].mean()
-            meantable.append(math.log(round(calculated_mean)))
-        fig.add_trace(go.Scatterpolar(
-            r=meantable,
-            theta=categories,
-            name=y
+    #Making fig1 scatterpolar
+    fig1 = go.Figure()
+    dimensions = []
+    for value in selected_values:
+        mean_table = []
+        for field in fields:
+            masked_df = df[df[selected_category] == value]
+            calculated_mean = masked_df[field].mean()
+            if not math.isnan(calculated_mean):
+                mean_table.append(math.log(round(calculated_mean)))
+            else:
+                mean_table.append(0)
+        fig1.add_trace(go.Scatterpolar(
+            r=mean_table,
+            theta=fields,
+            name=value
         ))
 
-    for x in categories:
-        allrows = []
-        for y in selected_values:
-            small_df = df[df[selected_category] == y]
-            allrows.append(math.log(round(small_df[x]))) #here help me broer
-        pcp_list.append(dict(range=[min(allrows), max(allrows)], label=x, values=allrows))
+    #Making fig2 pcp with go.parcoods
+    for field in fields:
+        masked_field = df[df[selected_category].isin(selected_values)][field]
+        dimensions.append(dict(range=[masked_field.min(), masked_field.max()], label=field.replace("_", " "), values=masked_field))
 
     fig2 = go.Figure(data=
     go.Parcoords(
-        line_color='blue',
-        dimensions=pcp_list
+        line=dict(color=df[selected_category].astype('category').cat.codes,
+                  showscale=True),
+        dimensions=dimensions,
     ))
-    return fig, fig2
+    fig2.update_xaxes(tickangle=-90)
+    return fig1, fig2
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
