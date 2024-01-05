@@ -154,33 +154,36 @@ def update_output(selected_values, selected_category):
         ))
 
     #Making fig2 pcp with go.parcoods
-    for field in fields:
-        if selected_category == 'Loan_Type':
-            masked_field = pd.DataFrame(columns=[field])
-            for value in selected_values:
-                new_values = df[df[value] == 1][field]
-                pd.concat(masked_field[field], new_values)
-                print(masked_field.head())
-        else:
-            masked_field = df[df[selected_category].isin(selected_values)][field]
-        dimensions.append(
-            dict(range=[masked_field.min(), masked_field.max()], label=field.replace("_", " "), values=masked_field))
-
     if selected_category == 'Loan_Type':
-        fig2 = go.Figure(data=
-        go.Parcoords(
-            line=dict(color=range(len(selected_values)),
-                      showscale=True),
-            dimensions=dimensions,
-        ))
+        fig2 = go.Figure()
     else:
-        fig2 = go.Figure(data=
-        go.Parcoords(
-            line=dict(color=df[selected_category].astype('category').cat.codes,
-                      showscale=True),
-            dimensions=dimensions,
-        ))
-    fig2.update_xaxes(tickangle=-90)
+        for field in fields:
+            if selected_category == 'Loan_Type':
+                masked_field = pd.DataFrame(columns=[field])
+                for value in selected_values:
+                    new_values = df[df[value] == 1][field]
+                    pd.concat(masked_field[field], new_values)
+                    print(masked_field.head())
+            else:
+                masked_field = df[df[selected_category].isin(selected_values)][field]
+            dimensions.append(
+                dict(range=[masked_field.min(), masked_field.max()], label=field.replace("_", " "), values=masked_field))
+
+        if selected_category == 'Loan_Type':
+            fig2 = go.Figure(data=
+            go.Parcoords(
+                line=dict(color=range(len(selected_values)),
+                          showscale=True),
+                dimensions=dimensions,
+            ))
+        else:
+            fig2 = go.Figure(data=
+            go.Parcoords(
+                line=dict(color=df[selected_category].astype('category').cat.codes,
+                          showscale=True),
+                dimensions=dimensions,
+            ))
+        fig2.update_xaxes(tickangle=-90)
     return fig1, fig2
 
 
