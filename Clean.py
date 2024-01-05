@@ -1,13 +1,14 @@
 import pandas as pd
-import csv
+import numpy as np
 import re
 
 path = 'all_data.csv'
 path1 = 'clean_data.csv'
 path2 = 'filled_data.csv'
 df = pd.read_csv(path, sep=';', lineterminator='\r')
-#df.drop(columns=['ID', 'Name'], inplace = True)
-#df.drop(columns=['Unnamed: 0'], inplace = True)
+# df = pd.read_csv(path2)
+df.drop(columns=['ID', 'Name'], inplace = True)
+df.drop(columns=['Unnamed: 0'], inplace = True)
 
 
 def KeepAlphabets(text):
@@ -82,9 +83,6 @@ del df["SSN"]
 # one hot encode Payment_Behaviour
 # map Credit_Score
 
-import pandas as pd
-import numpy as np
-
 df = pd.read_csv('clean_data.csv')
 df['Age'] = df['Age'].astype('Int64')
 df = df.replace('', np.nan)
@@ -104,6 +102,35 @@ def fill_missing_values(df, col_name):
 columns = ['Age', 'Occupation', 'Monthly_Inhand_Salary']
 for i in columns:
     print(i)
-    df_filled = fill_missing_values(df, col_name= i)
+    df = fill_missing_values(df, col_name= i)
 
-df_filled.to_csv("filled_data.csv")
+# Step 1: Extract unique types of loans from the "Type_of_Loan" column
+unique_loan_types = set()
+
+for col_str in [i for i in df["Type_of_Loan"].unique()]:
+    types = re.split(', |and ', str(col_str))
+    #types = str(col_str).split(', | and ')
+    unique_loan_types.update(set(types))
+
+unique_loan_types.remove('')
+unique_loan_types.remove('nan')
+# Step 2: Convert the set to a list
+loan_types = list(unique_loan_types)
+
+# Step 1: Create new columns for each type of loan
+for loan_type in loan_types:
+    df[loan_type] = 0
+
+# Step 2: Update the new columns based on the "Type_of_Loan" column
+for index, row in df.iterrows():
+    type_of_loans = re.split(', |and ', str(row['Type_of_Loan']))
+    for loan_type in loan_types:
+        if loan_type in type_of_loans:
+            df.at[index, loan_type] = 1
+
+# Step 3: Drop the original "Type_of_Loan" column
+df = df.drop('Type_of_Loan', axis=1)
+
+df.rename(columns = {'Not Specified':'Loan Not Specified'}, inplace = True)
+
+df.to_csv("filled_data.csv")
