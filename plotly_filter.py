@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 import math
+import re
 
 app = dash.Dash(__name__)
 df = pd.read_csv('filled_data.csv')
@@ -43,11 +44,19 @@ for income_group in income_groups:
     if not pd.isna(income_group):
         income_options.append({'label': income_group, 'value': income_group})
 
+loan_options = []
+loan_types = ['Payday Loan', 'Auto Loan', 'Home Equity Loan', 'Mortgage Loan', 'Student Loan', 'Personal Loan',
+              'Loan Not Specified', 'Debt Consolidation Loan', 'Credit-Builder Loan']
+loan_types.sort()
+for loan_type in loan_types:
+    loan_options.append({'label': loan_type, 'value': loan_type})
+
 # Options for the category filter dropdown
 category_options = [
     {'label': 'Occupation', 'value': 'Occupation'},
     {'label': 'Age Group', 'value': 'Grouped_Age'},
-    {'label': 'Income Group', 'value': 'Grouped_Annual_Income'}
+    {'label': 'Income Group', 'value': 'Grouped_Annual_Income'},
+    {'label': 'Loan Type', 'value': 'Loan_Type'}
 ]
 
 app.layout = html.Div([
@@ -103,6 +112,8 @@ def update_dynamic_dropdown_options(selected_category):
         options = age_options
     elif selected_category == 'Grouped_Annual_Income':
         options = income_options
+    elif selected_category == 'Loan_Type':
+        options = loan_options
     else:
         options = []
     # Pre-select all options for the dynamic dropdown
@@ -121,13 +132,16 @@ def update_output(selected_values, selected_category):
     fields = ['Credit_Utilization_Ratio', 'Total_EMI_per_month', 'Outstanding_Debt',
               'Interest_Rate', 'Num_of_Loan', 'Delay_from_due_date', 'Num_of_Delayed_Payment']
 
-    #Making fig1 scatterpolar
+    # Making fig1 scatterpolar
     fig1 = go.Figure()
     dimensions = []
     for value in selected_values:
         mean_table = []
         for field in fields:
-            masked_df = df[df[selected_category] == value]
+            if selected_category == 'Loan_Type':
+                masked_df = df[df[value] == 1]
+            else:
+                masked_df = df[df[selected_category] == value]
             calculated_mean = masked_df[field].mean()
             if not math.isnan(calculated_mean):
                 mean_table.append(math.log(round(calculated_mean)))
@@ -141,15 +155,31 @@ def update_output(selected_values, selected_category):
 
     #Making fig2 pcp with go.parcoods
     for field in fields:
-        masked_field = df[df[selected_category].isin(selected_values)][field]
-        dimensions.append(dict(range=[masked_field.min(), masked_field.max()], label=field.replace("_", " "), values=masked_field))
+        if selected_category == 'Loan_Type':
+            masked_field = pd.DataFrame(columns=[field])
+            for value in selected_values:
+                new_values = df[df[value] == 1][field]
+                pd.concat(masked_field[field], new_values)
+                print(masked_field.head())
+        else:
+            masked_field = df[df[selected_category].isin(selected_values)][field]
+        dimensions.append(
+            dict(range=[masked_field.min(), masked_field.max()], label=field.replace("_", " "), values=masked_field))
 
-    fig2 = go.Figure(data=
-    go.Parcoords(
-        line=dict(color=df[selected_category].astype('category').cat.codes,
-                  showscale=True),
-        dimensions=dimensions,
-    ))
+    if selected_category == 'Loan_Type':
+        fig2 = go.Figure(data=
+        go.Parcoords(
+            line=dict(color=range(len(selected_values)),
+                      showscale=True),
+            dimensions=dimensions,
+        ))
+    else:
+        fig2 = go.Figure(data=
+        go.Parcoords(
+            line=dict(color=df[selected_category].astype('category').cat.codes,
+                      showscale=True),
+            dimensions=dimensions,
+        ))
     fig2.update_xaxes(tickangle=-90)
     return fig1, fig2
 
