@@ -60,7 +60,7 @@ category_options = [
 ]
 
 fields = ['Credit_Utilization_Ratio', 'Total_EMI_per_month', 'Outstanding_Debt',
-              'Interest_Rate', 'Num_of_Loan', 'Delay_from_due_date', 'Num_of_Delayed_Payment']
+          'Interest_Rate', 'Num_of_Loan', 'Delay_from_due_date', 'Num_of_Delayed_Payment']
 
 app.layout = html.Div([
     # Left block
@@ -73,28 +73,28 @@ app.layout = html.Div([
         dcc.Dropdown(
             id='left-side-category-dropdown',
             options=category_options,
-            value=category_options[0]['value']
+            value=category_options[1]['value'],
         ),
 
         html.Label('Select Left Side Label'),
         dcc.Dropdown(
             id='left-side-label-dropdown',
             multi=False,
-            value=df[category_options[0]['value']].unique().tolist()
+            value=df[category_options[1]['value']].unique().tolist()[0]
         ),
 
         html.Label('Select Left Side Second Category'),
         dcc.Dropdown(
             id='left-side-second-category-dropdown',
-            options=category_options[1:],
-            value=category_options[1]['value']
+            options=category_options,
+            value=category_options[2]['value']
         ),
 
         html.Label('Select Left Side Second Label'),
         dcc.Dropdown(
             id='left-side-second-label-dropdown',
             multi=False,
-            value=df[category_options[1]['value']].unique().tolist()
+            value=df[category_options[2]['value']].unique().tolist()[0]
         ),
 
         html.Label('Select Left Side Field'),
@@ -103,6 +103,9 @@ app.layout = html.Div([
             options=[{'label': field, 'value': field} for field in fields],
             value=fields[0]
         ),
+
+        # Bar chart for left side
+        dcc.Graph(id='bar-chart-left'),
 
         # Scatterpolar graph for left side
         dcc.Graph(id='scatterpolar-left'),
@@ -126,7 +129,8 @@ app.layout = html.Div([
             id='first-occupation-dropdown',
             options=occupation_options,
             multi=False,
-            value=occupation_options[0]['value']
+            value=occupation_options[0]['value'],
+            placeholder=occupation_options[0]['value']
         ),
 
         html.Label('vs \n'),
@@ -156,28 +160,30 @@ app.layout = html.Div([
         dcc.Dropdown(
             id='right-side-category-dropdown',
             options=category_options,
-            value=category_options[0]['value']
+            value=category_options[1]['value']
         ),
 
         html.Label('Select Right Side Label'),
         dcc.Dropdown(
             id='right-side-label-dropdown',
+            options=occupation_options,
             multi=False,
-            value=df[category_options[0]['value']].unique().tolist()
+            value=occupation_options[0]['value']
         ),
 
         html.Label('Select Right Side Second Category'),
         dcc.Dropdown(
             id='right-side-second-category-dropdown',
-            options=category_options[1:],
-            value=category_options[1]['value']
+            options=category_options,
+            value=category_options[2]['value']
         ),
 
         html.Label('Select Right Side Second Label'),
         dcc.Dropdown(
             id='right-side-second-label-dropdown',
+            options=occupation_options,
             multi=False,
-            value=df[category_options[1]['value']].unique().tolist()
+            value=occupation_options[0]['value']
         ),
 
         html.Label('Select Right Side Field'),
@@ -186,6 +192,9 @@ app.layout = html.Div([
             options=[{'label': field, 'value': field} for field in fields],
             value=fields[0]
         ),
+
+        # Bar chart for right side
+        dcc.Graph(id='bar-chart-right'),
 
         # Scatterpolar graph for right side
         dcc.Graph(id='scatterpolar-right'),
@@ -216,6 +225,7 @@ def update_first_occupation_dropdown_options(selected_category):
     values = [options[0]['value']] if options else []
     return options, values
 
+
 # Callback to dynamically update the options of the second occupation dropdown
 @app.callback(
     [Output('second-occupation-dropdown', 'options'),
@@ -229,56 +239,216 @@ def update_second_occupation_dropdown_options(selected_category):
         options = age_options
     elif selected_category == 'Grouped_Annual_Income':
         options = income_options
+    elif selected_category == 'Loan_Type':
+        options = loan_options
     else:
         options = []
     # Pre-select the second option for the second occupation dropdown
     values = [options[1]['value']] if len(options) > 1 else []
     return options, values
 
-# Callback to dynamically update the options for the left side label dropdown based on the selected category
+
+from dash import callback_context
+
+
+# Callback to dynamically update the options of the left side label dropdown
 @app.callback(
     [Output('left-side-label-dropdown', 'options'),
      Output('left-side-label-dropdown', 'value')],
     [Input('left-side-category-dropdown', 'value')]
 )
-def update_left_side_label_options(selected_category):
-    options = [{'label': label, 'value': label} for label in df[selected_category].dropna().unique()]
-    values = options[0]['value'] if options else []
-    return options, values
-
-# Callback to dynamically update the options for the right side label dropdown based on the selected category
-@app.callback(
-    [Output('right-side-label-dropdown', 'options'),
-     Output('right-side-label-dropdown', 'value')],
-    [Input('right-side-category-dropdown', 'value')]
-)
-def update_right_side_label_options(selected_category):
-    options = [{'label': label, 'value': label} for label in df[selected_category].dropna().unique()]
-    values = options[0]['value'] if options else []
-    return options, values
+def update_left_side_label_dropdown_options(selected_category):
+    return get_options_and_defaults(selected_category)
 
 
-# Callback to dynamically update the options for the left side second label dropdown based on the selected category
 @app.callback(
     [Output('left-side-second-label-dropdown', 'options'),
      Output('left-side-second-label-dropdown', 'value')],
     [Input('left-side-second-category-dropdown', 'value')]
 )
-def update_left_side_second_label_options(selected_category):
-    options = [{'label': label, 'value': label} for label in df[selected_category].dropna().unique()]
-    values = options[0]['value'] if options else []
-    return options, values
+def update_left_side_second_label_dropdown_options(selected_category):
+    return get_options_and_defaults(selected_category)
 
-# Callback to dynamically update the options for the right side second label dropdown based on the selected category
+
+# Callback to dynamically update the options of the right side label dropdown
+@app.callback(
+    [Output('right-side-label-dropdown', 'options'),
+     Output('right-side-label-dropdown', 'value')],
+    [Input('right-side-category-dropdown', 'value')]
+)
+def update_right_side_label_dropdown_options(selected_category):
+    return get_options_and_defaults(selected_category)
+
+
 @app.callback(
     [Output('right-side-second-label-dropdown', 'options'),
      Output('right-side-second-label-dropdown', 'value')],
     [Input('right-side-second-category-dropdown', 'value')]
 )
-def update_right_side_second_label_options(selected_category):
-    options = [{'label': label, 'value': label} for label in df[selected_category].dropna().unique()]
-    values = options[0]['value'] if options else []
+def update_right_side_second_label_dropdown_options(selected_category):
+    return get_options_and_defaults(selected_category)
+
+
+# Helper function to get options and default values based on selected category
+def get_options_and_defaults(selected_category):
+    if callback_context.triggered_id is None:  # Check if the callback is triggered by the initial loading
+        # Set default values based on the selected category
+        if selected_category == 'Occupation':
+            options = occupation_options
+            values = [options[0]['value']] if options else []
+        elif selected_category == 'Grouped_Age':
+            options = age_options
+            values = [options[0]['value']] if options else []
+        elif selected_category == 'Grouped_Annual_Income':
+            options = income_options
+            values = [options[0]['value']] if options else []
+        elif selected_category == 'Loan_Type':
+            options = loan_options
+            values = [options[0]['value']] if options else []
+        else:
+            options = []
+            values = []
+    else:
+        # Retrieve values from the callback inputs
+        options = get_options_based_on_category(selected_category)
+        values = [options[0]['value']] if options else []
+
     return options, values
+
+
+# Helper function to get options based on selected category
+def get_options_based_on_category(selected_category):
+    if selected_category == 'Occupation':
+        return occupation_options
+    elif selected_category == 'Grouped_Age':
+        return age_options
+    elif selected_category == 'Grouped_Annual_Income':
+        return income_options
+    elif selected_category == 'Loan_Type':
+        return loan_options
+    else:
+        return []
+
+
+all_categories = ['Occupation', 'Grouped_Age', 'Grouped_Annual_Income', 'Loan_Type']
+
+
+# Callback to update the bar chart for the left side
+@app.callback(
+    Output('bar-chart-left', 'figure'),
+    [Input('category-dropdown', 'value'),
+     Input('left-side-category-dropdown', 'value'),
+     Input('left-side-label-dropdown', 'value'),
+     Input('left-side-second-category-dropdown', 'value'),
+     Input('left-side-second-label-dropdown', 'value'),
+     Input('left-side-field-dropdown', 'value')]
+)
+def update_bar_chart_left(main_category, selected_category, selected_label, second_category, second_label,
+                          selected_field):
+    unchosen_category = [category for category in all_categories if
+                         category not in [selected_category, second_category, main_category]][0]
+    # Get unique labels for the unchosen category
+    if unchosen_category == 'Loan_Type':
+        main_category_labels = loan_types
+    else:
+        main_category_labels = df[unchosen_category].unique()
+
+    # Filter the database based on left-side category labels and second category labels
+    if selected_category == 'Loan_Type':
+        filtered_data = df[df[selected_label] == 1]
+    else:
+        filtered_data = df[df[selected_category] == selected_label]
+
+    if second_category == 'Loan_Type':
+        filtered_data = filtered_data[filtered_data[second_label] == 1]
+    else:
+        filtered_data = filtered_data[filtered_data[second_category] == second_label]
+
+    # Create traces for the selected field
+    values = []
+    for label in main_category_labels:
+        if unchosen_category == 'Loan_Type':
+            label_data = filtered_data[filtered_data[label] == 1]
+        else:
+            label_data = filtered_data[filtered_data[unchosen_category] == label]
+        mean_value = label_data[selected_field].mean()
+        if not math.isnan(mean_value):
+            values.append(math.log(round(mean_value)))
+        else:
+            values.append(None)
+
+    # Pad 'r' values with None to match the length of 'theta' values
+    while len(values) < len(main_category_labels):
+        values.append(None)
+
+    trace = go.Bar(
+        x=main_category_labels,
+        y=values,
+        name=selected_field
+    )
+
+    layout = go.Layout(title='', xaxis={'title': unchosen_category},
+                       yaxis={'title': f'Mean {selected_field}'})
+    return go.Figure(data=[trace], layout=layout)
+
+
+# Similar callback for updating the bar chart for the right side
+@app.callback(
+    Output('bar-chart-right', 'figure'),
+    [Input('category-dropdown', 'value'),
+     Input('right-side-category-dropdown', 'value'),
+     Input('right-side-label-dropdown', 'value'),
+     Input('right-side-second-category-dropdown', 'value'),
+     Input('right-side-second-label-dropdown', 'value'),
+     Input('right-side-field-dropdown', 'value')]
+)
+def update_bar_chart_right(main_category, selected_category, selected_label, second_category, second_label,
+                           selected_field):
+    unchosen_category = [category for category in all_categories if
+                         category not in [selected_category, second_category, main_category]][0]
+    # Get unique labels for the unchosen category selected
+    if unchosen_category == 'Loan_Type':
+        main_category_labels = loan_types
+    else:
+        main_category_labels = df[unchosen_category].unique()
+
+    # Filter the database based on left-side category labels and second category labels
+    if selected_category == 'Loan_Type':
+        filtered_data = df[df[selected_label] == 1]
+    else:
+        filtered_data = df[df[selected_category] == selected_label]
+
+    if second_category == 'Loan_Type':
+        filtered_data = filtered_data[filtered_data[second_label] == 1]
+    else:
+        filtered_data = filtered_data[filtered_data[second_category] == second_label]
+
+    # Create traces for the selected field
+    values = []
+    for label in main_category_labels:
+        if unchosen_category == 'Loan_Type':
+            label_data = filtered_data[filtered_data[label] == 1]
+        else:
+            label_data = filtered_data[filtered_data[unchosen_category] == label]
+        mean_value = label_data[selected_field].mean()
+        if not math.isnan(mean_value):
+            values.append(math.log(round(mean_value)))
+        else:
+            values.append(None)
+
+    # Pad 'r' values with None to match the length of 'theta' values
+    while len(values) < len(main_category_labels):
+        values.append(None)
+
+    trace = go.Bar(
+        x=main_category_labels,
+        y=values,
+        name=selected_field
+    )
+
+    layout = go.Layout(title='', xaxis={'title': unchosen_category},
+                       yaxis={'title': f'Mean {selected_field}'})
+    return go.Figure(data=[trace], layout=layout)
 
 
 # Callbacks for updating the occupation names in the left and right side blocks
@@ -289,7 +459,7 @@ def update_right_side_second_label_options(selected_category):
      Input('second-occupation-dropdown', 'value')]
 )
 def update_occupation_names(first_occupation, second_occupation):
-    return f'{first_occupation} (Left Side)', f'{second_occupation} (Right Side)'
+    return f'{first_occupation}s', f'{second_occupation}s'
 
 
 # Callback to update the scatterpolar graph for the left side
@@ -302,17 +472,32 @@ def update_occupation_names(first_occupation, second_occupation):
      Input('left-side-second-label-dropdown', 'value'),
      Input('left-side-field-dropdown', 'value')]
 )
-def update_scatterpolar_left(main_category, selected_category, selected_label, second_category, second_label, selected_field):
+def update_scatterpolar_left(main_category, selected_category, selected_label, second_category, second_label,
+                             selected_field):
     # Get unique labels for the main category selected in the middle
-    main_category_labels = df[main_category].unique()
+    if main_category == 'Loan_Type':
+        main_category_labels = loan_types
+    else:
+        main_category_labels = df[main_category].unique()
 
     # Filter the database based on left-side category labels and second category labels
-    filtered_data = df[(df[selected_category] == selected_label) & (df[second_category] == second_label)]
+    if selected_category == 'Loan_Type':
+        filtered_data = df[df[selected_label] == 1]
+    else:
+        filtered_data = df[df[selected_category] == selected_label]
+
+    if second_category == 'Loan_Type':
+        filtered_data = filtered_data[filtered_data[second_label] == 1]
+    else:
+        filtered_data = filtered_data[filtered_data[second_category] == second_label]
 
     # Create traces for the selected field
     values = []
     for label in main_category_labels:
-        label_data = filtered_data[filtered_data[main_category] == label]
+        if main_category == 'Loan_Type':
+            label_data = filtered_data[filtered_data[label] == 1]
+        else:
+            label_data = filtered_data[filtered_data[main_category] == label]
         mean_value = label_data[selected_field].mean()
         if not math.isnan(mean_value):
             values.append(math.log(round(mean_value)))
@@ -333,7 +518,7 @@ def update_scatterpolar_left(main_category, selected_category, selected_label, s
     return go.Figure(data=[trace], layout=layout)
 
 
-# Callback to update the scatterpolar graph for the left side
+# Callback to update the scatterpolar graph for the right side
 @app.callback(
     Output('scatterpolar-right', 'figure'),
     [Input('category-dropdown', 'value'),
@@ -343,17 +528,32 @@ def update_scatterpolar_left(main_category, selected_category, selected_label, s
      Input('right-side-second-label-dropdown', 'value'),
      Input('right-side-field-dropdown', 'value')]
 )
-def update_scatterpolar_right(main_category, selected_category, selected_label, second_category, second_label, selected_field):
+def update_scatterpolar_right(main_category, selected_category, selected_label, second_category, second_label,
+                              selected_field):
     # Get unique labels for the main category selected in the middle
-    main_category_labels = df[main_category].unique()
+    if main_category == 'Loan_Type':
+        main_category_labels = loan_types
+    else:
+        main_category_labels = df[main_category].unique()
 
     # Filter the database based on left-side category labels and second category labels
-    filtered_data = df[(df[selected_category] == selected_label) & (df[second_category] == second_label)]
+    if selected_category == 'Loan_Type':
+        filtered_data = df[df[selected_label] == 1]
+    else:
+        filtered_data = df[df[selected_category] == selected_label]
+
+    if second_category == 'Loan_Type':
+        filtered_data = filtered_data[filtered_data[second_label] == 1]
+    else:
+        filtered_data = filtered_data[filtered_data[second_category] == second_label]
 
     # Create traces for the selected field
     values = []
     for label in main_category_labels:
-        label_data = filtered_data[filtered_data[main_category] == label]
+        if main_category == 'Loan_Type':
+            label_data = filtered_data[filtered_data[label] == 1]
+        else:
+            label_data = filtered_data[filtered_data[main_category] == label]
         mean_value = label_data[selected_field].mean()
         if not math.isnan(mean_value):
             values.append(math.log(round(mean_value)))
@@ -410,7 +610,7 @@ def update_output(first_occupation, second_occupation, selected_category):
             name=value
         ))
 
-    #Making fig2 pcp with go.parcoods
+    # Making fig2 pcp with go.parcoods
     if selected_category == 'Loan_Type':
         fig2 = go.Figure()
     else:
@@ -424,7 +624,8 @@ def update_output(first_occupation, second_occupation, selected_category):
             else:
                 masked_field = df[df[selected_category].isin(selected_values)][field]
             dimensions.append(
-                dict(range=[masked_field.min(), masked_field.max()], label=field.replace("_", " "), values=masked_field))
+                dict(range=[masked_field.min(), masked_field.max()], label=field.replace("_", " "),
+                     values=masked_field))
 
         if selected_category == 'Loan_Type':
             fig2 = go.Figure(data=
