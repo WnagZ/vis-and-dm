@@ -72,8 +72,8 @@ app.layout = html.Div([
         html.Label('Select Left Side Category'),
         dcc.Dropdown(
             id='left-side-category-dropdown',
-            options=category_options,
-            value=category_options[1]['value'],
+            # options=category_options,
+            # value=category_options[1]['value'],
         ),
 
         html.Label('Select Left Side Label'),
@@ -86,8 +86,8 @@ app.layout = html.Div([
         html.Label('Select Left Side Second Category'),
         dcc.Dropdown(
             id='left-side-second-category-dropdown',
-            options=category_options,
-            value=category_options[2]['value']
+            # options=category_options,
+            # value=category_options[2]['value']
         ),
 
         html.Label('Select Left Side Second Label'),
@@ -247,7 +247,23 @@ def update_second_occupation_dropdown_options(selected_category):
     return options, values
 
 
-from dash import callback_context
+@app.callback(
+    [Output('left-side-category-dropdown', 'options'),
+     Output('left-side-category-dropdown', 'value')],
+    [Input('category-dropdown', 'value')]
+)
+def update_left_side_category_dropdown_options(selected_category):
+    return get_options_and_defaults_side_first_category(selected_category)
+
+
+@app.callback(
+    [Output('left-side-second-category-dropdown', 'options'),
+     Output('left-side-second-category-dropdown', 'value')],
+    [Input('left-side-category-dropdown', 'value'),
+     Input('left-side-category-dropdown', 'options')]
+)
+def update_left_side_category_second_dropdown_options(selected_category, options):
+    return get_options_and_defaults_second_category(selected_category, options)
 
 
 # Callback to dynamically update the options of the left side label dropdown
@@ -268,6 +284,23 @@ def update_left_side_label_dropdown_options(selected_category):
 def update_left_side_second_label_dropdown_options(selected_category):
     return get_options_and_defaults(selected_category)
 
+@app.callback(
+    [Output('right-side-category-dropdown', 'options'),
+     Output('right-side-category-dropdown', 'value')],
+    [Input('category-dropdown', 'value')]
+)
+def update_right_side_category_dropdown_options(selected_category):
+    return get_options_and_defaults_side_first_category(selected_category)
+
+
+@app.callback(
+    [Output('right-side-second-category-dropdown', 'options'),
+     Output('right-side-second-category-dropdown', 'value')],
+    [Input('right-side-category-dropdown', 'value'),
+     Input('right-side-category-dropdown', 'options')]
+)
+def update_right_side_category_second_dropdown_options(selected_category, options):
+    return get_options_and_defaults_second_category(selected_category, options)
 
 # Callback to dynamically update the options of the right side label dropdown
 @app.callback(
@@ -288,9 +321,34 @@ def update_right_side_second_label_dropdown_options(selected_category):
     return get_options_and_defaults(selected_category)
 
 
+def get_options_and_defaults_side_first_category(selected_category):
+    constrained_options = category_options.copy()
+    if selected_category == 'Occupation':
+        constrained_options.pop(0)
+    elif selected_category == 'Grouped_Age':
+        constrained_options.pop(1)
+    elif selected_category == 'Grouped_Annual_Income':
+        constrained_options.pop(2)
+    else:
+        constrained_options.pop(3)
+    return constrained_options, constrained_options[0]['value']
+
+
+def get_options_and_defaults_second_category(selected_category, options):
+    constrained_options = options.copy()
+    if selected_category == 'Occupation':
+        constrained_options.remove(category_options[0])
+    elif selected_category == 'Grouped_Age':
+        constrained_options.remove(category_options[1])
+    elif selected_category == 'Grouped_Annual_Income':
+        constrained_options.remove(category_options[2])
+    else:
+        constrained_options.remove(category_options[3])
+    return constrained_options, constrained_options[0]['value']
+
+
 # Helper function to get options and default values based on selected category
 def get_options_and_defaults(selected_category):
-    # if callback_context.triggered_id is None:  # Check if the callback is triggered by the initial loading
     #     # Set default values based on the selected category
     #     if selected_category == 'Occupation':
     #         options = occupation_options
