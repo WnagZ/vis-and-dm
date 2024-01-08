@@ -80,7 +80,7 @@ app.layout = html.Div([
         dcc.Dropdown(
             id='left-side-label-dropdown',
             multi=False,
-            value=df[category_options[1]['value']].unique().tolist()[0]
+            # value=df[category_options[1]['value']].unique().tolist()[0]
         ),
 
         html.Label('Select Left Side Second Category'),
@@ -94,7 +94,7 @@ app.layout = html.Div([
         dcc.Dropdown(
             id='left-side-second-label-dropdown',
             multi=False,
-            value=df[category_options[2]['value']].unique().tolist()[0]
+            # value=df[category_options[2]['value']].unique().tolist()[0]
         ),
 
         html.Label('Select Left Side Field'),
@@ -129,8 +129,7 @@ app.layout = html.Div([
             id='first-occupation-dropdown',
             options=occupation_options,
             multi=False,
-            value=occupation_options[0]['value'],
-            placeholder=occupation_options[0]['value']
+            # value=occupation_options[0]['value']
         ),
 
         html.Label('vs \n'),
@@ -140,7 +139,7 @@ app.layout = html.Div([
             id='second-occupation-dropdown',
             options=occupation_options,
             multi=False,
-            value=occupation_options[1]['value']
+            # value=occupation_options[1]['value']
         ),
 
         # Scatterpolar graph for displaying selected values
@@ -168,7 +167,7 @@ app.layout = html.Div([
             id='right-side-label-dropdown',
             options=occupation_options,
             multi=False,
-            value=occupation_options[0]['value']
+            # value=occupation_options[0]['value']
         ),
 
         html.Label('Select Right Side Second Category'),
@@ -183,7 +182,7 @@ app.layout = html.Div([
             id='right-side-second-label-dropdown',
             options=occupation_options,
             multi=False,
-            value=occupation_options[0]['value']
+            # value=occupation_options[0]['value']
         ),
 
         html.Label('Select Right Side Field'),
@@ -222,7 +221,7 @@ def update_first_occupation_dropdown_options(selected_category):
     else:
         options = []
     # Pre-select the first option for the first occupation dropdown
-    values = [options[0]['value']] if options else []
+    values = options[0]['value']
     return options, values
 
 
@@ -244,7 +243,7 @@ def update_second_occupation_dropdown_options(selected_category):
     else:
         options = []
     # Pre-select the second option for the second occupation dropdown
-    values = [options[1]['value']] if len(options) > 1 else []
+    values = options[1]['value'] if len(options) > 1 else ''
     return options, values
 
 
@@ -291,27 +290,27 @@ def update_right_side_second_label_dropdown_options(selected_category):
 
 # Helper function to get options and default values based on selected category
 def get_options_and_defaults(selected_category):
-    if callback_context.triggered_id is None:  # Check if the callback is triggered by the initial loading
-        # Set default values based on the selected category
-        if selected_category == 'Occupation':
-            options = occupation_options
-            values = [options[0]['value']] if options else []
-        elif selected_category == 'Grouped_Age':
-            options = age_options
-            values = [options[0]['value']] if options else []
-        elif selected_category == 'Grouped_Annual_Income':
-            options = income_options
-            values = [options[0]['value']] if options else []
-        elif selected_category == 'Loan_Type':
-            options = loan_options
-            values = [options[0]['value']] if options else []
-        else:
-            options = []
-            values = []
-    else:
-        # Retrieve values from the callback inputs
-        options = get_options_based_on_category(selected_category)
-        values = [options[0]['value']] if options else []
+    # if callback_context.triggered_id is None:  # Check if the callback is triggered by the initial loading
+    #     # Set default values based on the selected category
+    #     if selected_category == 'Occupation':
+    #         options = occupation_options
+    #         values = [options[0]['value']] if options else []
+    #     elif selected_category == 'Grouped_Age':
+    #         options = age_options
+    #         values = [options[0]['value']] if options else []
+    #     elif selected_category == 'Grouped_Annual_Income':
+    #         options = income_options
+    #         values = [options[0]['value']] if options else []
+    #     elif selected_category == 'Loan_Type':
+    #         options = loan_options
+    #         values = [options[0]['value']] if options else []
+    #     else:
+    #         options = []
+    #         values = []
+    # else:
+    #     # Retrieve values from the callback inputs
+    options = get_options_based_on_category(selected_category)
+    values = options[0]['value'] if options else ''
 
     return options, values
 
