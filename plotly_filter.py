@@ -9,6 +9,7 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 import math
 import re
+import numpy as np
 
 app = dash.Dash(__name__)
 df = pd.read_csv('filled_data.csv')
@@ -66,38 +67,38 @@ app.layout = html.Div([
     # Left block
     html.Div([
         # Occupation name at the top
-        html.H3(id='left-occupation-name'),
+        html.H3(id='left-occupation-name', style={'color': '#0474BA'}),
 
         # Four dropdowns for the left side
-        html.Label('Select Left Side Category'),
+        html.Label('Select Left Side Category', style={'color': '#0474BA'}),
         dcc.Dropdown(
             id='left-side-category-dropdown',
             # options=category_options,
             # value=category_options[1]['value'],
         ),
 
-        html.Label('Select Left Side Label'),
+        html.Label('Select Left Side Label', style={'color': '#0474BA'}),
         dcc.Dropdown(
             id='left-side-label-dropdown',
             multi=False,
             # value=df[category_options[1]['value']].unique().tolist()[0]
         ),
 
-        html.Label('Select Left Side Second Category'),
+        html.Label('Select Left Side Second Category', style={'color': '#0474BA'}),
         dcc.Dropdown(
             id='left-side-second-category-dropdown',
             # options=category_options,
             # value=category_options[2]['value']
         ),
 
-        html.Label('Select Left Side Second Label'),
+        html.Label('Select Left Side Second Label', style={'color': '#0474BA'}),
         dcc.Dropdown(
             id='left-side-second-label-dropdown',
             multi=False,
             # value=df[category_options[2]['value']].unique().tolist()[0]
         ),
 
-        html.Label('Select Left Side Field'),
+        html.Label('Select Left Side Field', style={'color': '#0474BA'}),
         dcc.Dropdown(
             id='left-side-field-dropdown',
             options=[{'label': field, 'value': field} for field in fields],
@@ -114,7 +115,7 @@ app.layout = html.Div([
 
     # Middle block
     html.Div([
-        html.H1("Dynamic Dropdowns with Plotly Dash"),
+        html.H1("Exploratory Visualization"),
         # Category Dropdown
         html.Label('Select Category'),
         dcc.Dropdown(
@@ -124,7 +125,7 @@ app.layout = html.Div([
         ),
 
         # Dynamic Dropdowns for the first and second occupations
-        html.Label('Select First Occupation'),
+        html.Label('Select Left-side Label', style={'color': '#0474BA'}),
         dcc.Dropdown(
             id='first-occupation-dropdown',
             options=occupation_options,
@@ -134,7 +135,7 @@ app.layout = html.Div([
 
         html.Label('vs \n'),
 
-        html.Label('Select Second Occupation'),
+        html.Label('Select Right-side Label', style={'color': '#F79500'}),
         dcc.Dropdown(
             id='second-occupation-dropdown',
             options=occupation_options,
@@ -152,17 +153,17 @@ app.layout = html.Div([
     # Right block
     html.Div([
         # Occupation name at the top
-        html.H3(id='right-occupation-name'),
+        html.H3(id='right-occupation-name', style={'color': '#F79500'}),
 
         # Four dropdowns for the right side
-        html.Label('Select Right Side Category'),
+        html.Label('Select Right Side Category', style={'color': '#F79500'}),
         dcc.Dropdown(
             id='right-side-category-dropdown',
             options=category_options,
             value=category_options[1]['value']
         ),
 
-        html.Label('Select Right Side Label'),
+        html.Label('Select Right Side Label', style={'color': '#F79500'}),
         dcc.Dropdown(
             id='right-side-label-dropdown',
             options=occupation_options,
@@ -170,14 +171,14 @@ app.layout = html.Div([
             # value=occupation_options[0]['value']
         ),
 
-        html.Label('Select Right Side Second Category'),
+        html.Label('Select Right Side Second Category', style={'color': '#F79500'}),
         dcc.Dropdown(
             id='right-side-second-category-dropdown',
             options=category_options,
             value=category_options[2]['value']
         ),
 
-        html.Label('Select Right Side Second Label'),
+        html.Label('Select Right Side Second Label', style={'color': '#F79500'}),
         dcc.Dropdown(
             id='right-side-second-label-dropdown',
             options=occupation_options,
@@ -185,7 +186,7 @@ app.layout = html.Div([
             # value=occupation_options[0]['value']
         ),
 
-        html.Label('Select Right Side Field'),
+        html.Label('Select Right Side Field', style={'color': '#F79500'}),
         dcc.Dropdown(
             id='right-side-field-dropdown',
             options=[{'label': field, 'value': field} for field in fields],
@@ -284,6 +285,7 @@ def update_left_side_label_dropdown_options(selected_category):
 def update_left_side_second_label_dropdown_options(selected_category):
     return get_options_and_defaults(selected_category)
 
+
 @app.callback(
     [Output('right-side-category-dropdown', 'options'),
      Output('right-side-category-dropdown', 'value')],
@@ -301,6 +303,7 @@ def update_right_side_category_dropdown_options(selected_category):
 )
 def update_right_side_category_second_dropdown_options(selected_category, options):
     return get_options_and_defaults_second_category(selected_category, options)
+
 
 # Callback to dynamically update the options of the right side label dropdown
 @app.callback(
@@ -398,10 +401,11 @@ all_categories = ['Occupation', 'Grouped_Age', 'Grouped_Annual_Income', 'Loan_Ty
      Input('left-side-label-dropdown', 'value'),
      Input('left-side-second-category-dropdown', 'value'),
      Input('left-side-second-label-dropdown', 'value'),
-     Input('left-side-field-dropdown', 'value')]
+     Input('left-side-field-dropdown', 'value'),
+     Input('first-occupation-dropdown', 'value')]
 )
 def update_bar_chart_left(main_category, selected_category, selected_label, second_category, second_label,
-                          selected_field):
+                          selected_field, left_occupation):
     unchosen_category = [category for category in all_categories if
                          category not in [selected_category, second_category, main_category]][0]
     # Get unique labels for the unchosen category
@@ -421,6 +425,11 @@ def update_bar_chart_left(main_category, selected_category, selected_label, seco
     else:
         filtered_data = filtered_data[filtered_data[second_category] == second_label]
 
+    if main_category == 'Loan_Type':
+        filtered_data = filtered_data[filtered_data[left_occupation] == 1]
+    else:
+        filtered_data = filtered_data[filtered_data[main_category] == left_occupation]
+
     # Create traces for the selected field
     values = []
     for label in main_category_labels:
@@ -441,11 +450,18 @@ def update_bar_chart_left(main_category, selected_category, selected_label, seco
     trace = go.Bar(
         x=main_category_labels,
         y=values,
-        name=selected_field
+        name=selected_field,
+        marker=dict(color='#0474BA')
     )
 
-    layout = go.Layout(title='', xaxis={'title': unchosen_category},
-                       yaxis={'title': f'Mean {selected_field}'})
+    layout = go.Layout(
+        title=dict(
+            text=f'{left_occupation}s\' {selected_field} by {unchosen_category}',
+            font=dict(color='#0474BA')
+        ),
+        xaxis={'title': unchosen_category},
+        yaxis={'title': f'Mean {selected_field}'}
+    )
     return go.Figure(data=[trace], layout=layout)
 
 
@@ -457,10 +473,11 @@ def update_bar_chart_left(main_category, selected_category, selected_label, seco
      Input('right-side-label-dropdown', 'value'),
      Input('right-side-second-category-dropdown', 'value'),
      Input('right-side-second-label-dropdown', 'value'),
-     Input('right-side-field-dropdown', 'value')]
+     Input('right-side-field-dropdown', 'value'),
+     Input('second-occupation-dropdown', 'value')]
 )
 def update_bar_chart_right(main_category, selected_category, selected_label, second_category, second_label,
-                           selected_field):
+                           selected_field, right_occupation):
     unchosen_category = [category for category in all_categories if
                          category not in [selected_category, second_category, main_category]][0]
     # Get unique labels for the unchosen category selected
@@ -480,6 +497,11 @@ def update_bar_chart_right(main_category, selected_category, selected_label, sec
     else:
         filtered_data = filtered_data[filtered_data[second_category] == second_label]
 
+    if main_category == 'Loan_Type':
+        filtered_data = filtered_data[filtered_data[right_occupation] == 1]
+    else:
+        filtered_data = filtered_data[filtered_data[main_category] == right_occupation]
+
     # Create traces for the selected field
     values = []
     for label in main_category_labels:
@@ -500,11 +522,18 @@ def update_bar_chart_right(main_category, selected_category, selected_label, sec
     trace = go.Bar(
         x=main_category_labels,
         y=values,
-        name=selected_field
+        name=selected_field,
+        marker=dict(color='#F79500')
     )
 
-    layout = go.Layout(title='', xaxis={'title': unchosen_category},
-                       yaxis={'title': f'Mean {selected_field}'})
+    layout = go.Layout(
+        title=dict(
+            text=f'{right_occupation}s\' {selected_field} by {unchosen_category}',
+            font=dict(color='#F79500')
+        ),
+        xaxis={'title': unchosen_category},
+        yaxis={'title': f'Mean {selected_field}'}
+    )
     return go.Figure(data=[trace], layout=layout)
 
 
@@ -527,15 +556,17 @@ def update_occupation_names(first_occupation, second_occupation):
      Input('left-side-label-dropdown', 'value'),
      Input('left-side-second-category-dropdown', 'value'),
      Input('left-side-second-label-dropdown', 'value'),
-     Input('left-side-field-dropdown', 'value')]
+     Input('left-side-field-dropdown', 'value'),
+     Input('first-occupation-dropdown', 'value')]
 )
 def update_scatterpolar_left(main_category, selected_category, selected_label, second_category, second_label,
-                             selected_field):
+                             selected_field, first_occupation):
     # Get unique labels for the main category selected in the middle
     if main_category == 'Loan_Type':
         main_category_labels = loan_types
     else:
         main_category_labels = df[main_category].unique()
+
 
     # Filter the database based on left-side category labels and second category labels
     if selected_category == 'Loan_Type':
@@ -561,6 +592,8 @@ def update_scatterpolar_left(main_category, selected_category, selected_label, s
         else:
             values.append(None)
 
+    colors = ['#0474BA' if label == first_occupation else 'black' for label in main_category_labels]
+
     # Pad 'r' values with None to match the length of 'theta' values
     while len(values) < len(main_category_labels):
         values.append(None)
@@ -568,10 +601,23 @@ def update_scatterpolar_left(main_category, selected_category, selected_label, s
     trace = go.Scatterpolar(
         r=values,
         theta=main_category_labels,
-        name=selected_field
+        name=selected_field,
+        line=dict(color='black'),
+        marker=dict(
+            color=colors
+        ),
     )
 
-    layout = go.Layout(polar=dict(radialaxis=dict(visible=True)), showlegend=True)
+    layout = go.Layout(
+        title=dict(
+            text=f'{main_category}s by {selected_field}',
+            font=dict(color='black')
+        ),
+        polar=dict(radialaxis=dict(visible=True)),
+        showlegend=True)
+
+
+
     return go.Figure(data=[trace], layout=layout)
 
 
@@ -583,10 +629,11 @@ def update_scatterpolar_left(main_category, selected_category, selected_label, s
      Input('right-side-label-dropdown', 'value'),
      Input('right-side-second-category-dropdown', 'value'),
      Input('right-side-second-label-dropdown', 'value'),
-     Input('right-side-field-dropdown', 'value')]
+     Input('right-side-field-dropdown', 'value'),
+     Input('second-occupation-dropdown', 'value')]
 )
 def update_scatterpolar_right(main_category, selected_category, selected_label, second_category, second_label,
-                              selected_field):
+                              selected_field, second_occupation):
     # Get unique labels for the main category selected in the middle
     if main_category == 'Loan_Type':
         main_category_labels = loan_types
@@ -617,6 +664,8 @@ def update_scatterpolar_right(main_category, selected_category, selected_label, 
         else:
             values.append(None)
 
+    colors = ['#F79500' if label == second_occupation else 'black' for label in main_category_labels]
+
     # Pad 'r' values with None to match the length of 'theta' values
     while len(values) < len(main_category_labels):
         values.append(None)
@@ -624,10 +673,20 @@ def update_scatterpolar_right(main_category, selected_category, selected_label, 
     trace = go.Scatterpolar(
         r=values,
         theta=main_category_labels,
-        name=selected_field
+        name=selected_field,
+        line=dict(color='black'),
+        marker=dict(
+            color=colors
+        ),
     )
 
-    layout = go.Layout(polar=dict(radialaxis=dict(visible=True)), showlegend=True)
+    layout = go.Layout(
+        title=dict(
+            text=f'{main_category}s by {selected_field}',
+            font=dict(color='black')
+        ),
+        polar=dict(radialaxis=dict(visible=True)),
+        showlegend=True)
     return go.Figure(data=[trace], layout=layout)
 
 
@@ -649,7 +708,7 @@ def update_output(first_occupation, second_occupation, selected_category):
     # Making fig1 scatterpolar
     fig1 = go.Figure()
     dimensions = []
-    for value in selected_values:
+    for i, value in enumerate(selected_values):
         mean_table = []
         for field in fields:
             if selected_category == 'Loan_Type':
@@ -661,10 +720,15 @@ def update_output(first_occupation, second_occupation, selected_category):
                 mean_table.append(math.log(round(calculated_mean)))
             else:
                 mean_table.append(0)
+
+        # Define color for the trace
+        trace_color = '#0474BA' if i == 0 else '#F79500'
+
         fig1.add_trace(go.Scatterpolar(
             r=mean_table,
             theta=fields,
-            name=value
+            name=value,
+            line=dict(color=trace_color)  # Set the line color
         ))
 
     # Making fig2 pcp with go.parcoods
