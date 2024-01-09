@@ -158,8 +158,8 @@ app.layout = html.Div([
         html.Label('Select Right Side Category'),
         dcc.Dropdown(
             id='right-side-category-dropdown',
-            options=category_options,
-            value=category_options[1]['value']
+            # options=category_options,
+            # value=category_options[1]['value']
         ),
 
         html.Label('Select Right Side Label'),
@@ -173,8 +173,8 @@ app.layout = html.Div([
         html.Label('Select Right Side Second Category'),
         dcc.Dropdown(
             id='right-side-second-category-dropdown',
-            options=category_options,
-            value=category_options[2]['value']
+            # options=category_options,
+            # value=category_options[2]['value']
         ),
 
         html.Label('Select Right Side Second Label'),
@@ -284,6 +284,7 @@ def update_left_side_label_dropdown_options(selected_category):
 def update_left_side_second_label_dropdown_options(selected_category):
     return get_options_and_defaults(selected_category)
 
+
 @app.callback(
     [Output('right-side-category-dropdown', 'options'),
      Output('right-side-category-dropdown', 'value')],
@@ -301,6 +302,7 @@ def update_right_side_category_dropdown_options(selected_category):
 )
 def update_right_side_category_second_dropdown_options(selected_category, options):
     return get_options_and_defaults_second_category(selected_category, options)
+
 
 # Callback to dynamically update the options of the right side label dropdown
 @app.callback(
@@ -335,6 +337,8 @@ def get_options_and_defaults_side_first_category(selected_category):
 
 
 def get_options_and_defaults_second_category(selected_category, options):
+    if options is None:
+        return [], ''
     constrained_options = options.copy()
     if selected_category == 'Occupation':
         constrained_options.remove(category_options[0])
@@ -402,6 +406,10 @@ all_categories = ['Occupation', 'Grouped_Age', 'Grouped_Annual_Income', 'Loan_Ty
 )
 def update_bar_chart_left(main_category, selected_category, selected_label, second_category, second_label,
                           selected_field):
+    if any(item is None for item in
+           [main_category, selected_category, selected_label, second_category, second_label,
+            selected_field]):
+        return go.Figure()
     unchosen_category = [category for category in all_categories if
                          category not in [selected_category, second_category, main_category]][0]
     # Get unique labels for the unchosen category
@@ -461,6 +469,10 @@ def update_bar_chart_left(main_category, selected_category, selected_label, seco
 )
 def update_bar_chart_right(main_category, selected_category, selected_label, second_category, second_label,
                            selected_field):
+    if any(item is None for item in
+           [main_category, selected_category, selected_label, second_category, second_label,
+            selected_field]):
+        return go.Figure()
     unchosen_category = [category for category in all_categories if
                          category not in [selected_category, second_category, main_category]][0]
     # Get unique labels for the unchosen category selected
@@ -531,6 +543,10 @@ def update_occupation_names(first_occupation, second_occupation):
 )
 def update_scatterpolar_left(main_category, selected_category, selected_label, second_category, second_label,
                              selected_field):
+    if any(item is None for item in
+           [main_category, selected_category, selected_label, second_category, second_label,
+            selected_field]):
+        return go.Figure()
     # Get unique labels for the main category selected in the middle
     if main_category == 'Loan_Type':
         main_category_labels = loan_types
@@ -587,6 +603,10 @@ def update_scatterpolar_left(main_category, selected_category, selected_label, s
 )
 def update_scatterpolar_right(main_category, selected_category, selected_label, second_category, second_label,
                               selected_field):
+    if any(item is None for item in
+           [main_category, selected_category, selected_label, second_category, second_label,
+            selected_field]):
+        return go.Figure()
     # Get unique labels for the main category selected in the middle
     if main_category == 'Loan_Type':
         main_category_labels = loan_types
@@ -640,12 +660,12 @@ def update_scatterpolar_right(main_category, selected_category, selected_label, 
      Input('category-dropdown', 'value')]
 )
 def update_output(first_occupation, second_occupation, selected_category):
+    if any(item is None for item in
+           [first_occupation, second_occupation, selected_category]):
+        return go.Figure(), go.Figure()
     # Convert single selected values to lists
     selected_values = [first_occupation] if isinstance(first_occupation, str) else first_occupation
     selected_values += [second_occupation] if isinstance(second_occupation, str) else second_occupation
-    fields = ['Credit_Utilization_Ratio', 'Total_EMI_per_month', 'Outstanding_Debt',
-              'Interest_Rate', 'Num_of_Loan', 'Delay_from_due_date', 'Num_of_Delayed_Payment']
-
     # Making fig1 scatterpolar
     fig1 = go.Figure()
     dimensions = []
@@ -668,37 +688,35 @@ def update_output(first_occupation, second_occupation, selected_category):
         ))
 
     # Making fig2 pcp with go.parcoods
-    if selected_category == 'Loan_Type':
-        fig2 = go.Figure()
-    else:
-        for field in fields:
-            if selected_category == 'Loan_Type':
-                masked_field = pd.DataFrame(columns=[field])
-                for value in selected_values:
-                    new_values = df[df[value] == 1][field]
-                    pd.concat(masked_field[field], new_values)
-                    print(masked_field.head())
-            else:
-                masked_field = df[df[selected_category].isin(selected_values)][field]
-            dimensions.append(
-                dict(range=[masked_field.min(), masked_field.max()], label=field.replace("_", " "),
-                     values=masked_field))
-
+    for field in fields:
         if selected_category == 'Loan_Type':
-            fig2 = go.Figure(data=
-            go.Parcoords(
-                line=dict(color=range(len(selected_values)),
-                          showscale=True),
-                dimensions=dimensions,
-            ))
+            masked_field = pd.DataFrame(columns=[field])
+            for value in selected_values:
+                if value in df.columns:
+                    new_values = df[df[value] == 1]
+                    # pd.concat(masked_field[field], new_values[field])
+                    masked_field = masked_field.append(new_values[field])
         else:
-            fig2 = go.Figure(data=
-            go.Parcoords(
-                line=dict(color=df[selected_category].astype('category').cat.codes,
-                          showscale=True),
-                dimensions=dimensions,
-            ))
-        fig2.update_xaxes(tickangle=-90)
+            masked_field = df[df[selected_category].isin(selected_values)][field]
+        dimensions.append(
+            dict(range=[masked_field.min(), masked_field.max()], label=field.replace("_", " "),
+                 values=masked_field))
+
+    if selected_category == 'Loan_Type':
+        fig2 = go.Figure(data=
+        go.Parcoords(
+            line=dict(color=range(len(selected_values)),
+                      showscale=True),
+            dimensions=dimensions,
+        ))
+    else:
+        fig2 = go.Figure(data=
+        go.Parcoords(
+            line=dict(color=df[selected_category].astype('category').cat.codes,
+                      showscale=True),
+            dimensions=dimensions,
+        ))
+    fig2.update_xaxes(tickangle=-90)
     return fig1, fig2
 
 
