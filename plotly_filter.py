@@ -8,7 +8,6 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 import math
 import re
-import numpy as np
 
 app = dash.Dash(__name__)
 df = pd.read_csv('filled_data.csv')
