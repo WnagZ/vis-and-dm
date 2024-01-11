@@ -742,9 +742,11 @@ def update_output(first_occupation, second_occupation, selected_category):
         # Define color for the trace
         trace_color = '#0474BA' if i == 0 else '#F79500'
 
+        meanlist = ["Mean " + x for x in fields]
+
         fig1.add_trace(go.Scatterpolar(
             r=mean_table,
-            theta=fields,
+            theta=meanlist,
             name=value,
             line=dict(color=trace_color)  # Set the line color
         ))
