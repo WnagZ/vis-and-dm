@@ -113,7 +113,8 @@ app.layout = html.Div([
 
     # Middle block
     html.Div([
-        html.H1("Credit Score Demographic Exploratory for Marketing", style={'textAlign': 'center'}),
+        html.H1("Credit Score Demographic Exploratory for Marketing", style={'textAlign': 'center',
+                                                                             'fontFamily': 'Trebuchet MS' }),
         # Category Dropdown
         html.Label('Select Category'),
         dcc.Dropdown(
@@ -452,10 +453,11 @@ def update_bar_chart_left(main_category, selected_category, selected_label, seco
         values.append(None)
 
     trace = go.Bar(
-        x=main_category_labels,
-        y=values,
+        y=main_category_labels,
+        x=values,
         name=selected_field,
-        marker=dict(color='#0474BA')
+        marker=dict(color='#0474BA'),
+        orientation='h'
     )
 
     layout = go.Layout(
@@ -482,6 +484,7 @@ def update_bar_chart_left(main_category, selected_category, selected_label, seco
 )
 def update_bar_chart_right(main_category, selected_category, selected_label, second_category, second_label,
                            selected_field, right_occupation):
+
     if any(item is None for item in
            [main_category, selected_category, selected_label, second_category, second_label,
             selected_field]):
@@ -528,10 +531,11 @@ def update_bar_chart_right(main_category, selected_category, selected_label, sec
         values.append(None)
 
     trace = go.Bar(
-        x=main_category_labels,
-        y=values,
+        y=main_category_labels,
+        x=values,
         name=selected_field,
-        marker=dict(color='#F79500')
+        marker=dict(color='#F79500'),
+        orientation = 'h'
     )
 
     layout = go.Layout(
@@ -540,7 +544,8 @@ def update_bar_chart_right(main_category, selected_category, selected_label, sec
             font=dict(color='#F79500')
         ),
         xaxis={'title': unchosen_category},
-        yaxis={'title': f'Mean {selected_field}'}
+        yaxis={'title': f'Mean {selected_field}'},
+
     )
     return go.Figure(data=[trace], layout=layout)
 
