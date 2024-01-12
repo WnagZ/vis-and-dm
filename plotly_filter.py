@@ -68,35 +68,35 @@ app.layout = html.Div([
         html.H3(id='left-occupation-name', style={'color': '#0474BA'}),
 
         # Four dropdowns for the left side
-        html.Label('Select Left Side Category', style={'color': '#0474BA'}),
+        html.Label('Select Left-side Category', style={'color': '#0474BA'}),
         dcc.Dropdown(
             id='left-side-category-dropdown',
             # options=category_options,
             # value=category_options[1]['value'],
         ),
 
-        html.Label('Select Left Side Label', style={'color': '#0474BA'}),
+        html.Label('Select Left-side Demographic', style={'color': '#0474BA'}),
         dcc.Dropdown(
             id='left-side-label-dropdown',
             multi=False,
             # value=df[category_options[1]['value']].unique().tolist()[0]
         ),
 
-        html.Label('Select Left Side Second Category', style={'color': '#0474BA'}),
+        html.Label('Select Left-side Second Category', style={'color': '#0474BA'}),
         dcc.Dropdown(
             id='left-side-second-category-dropdown',
             # options=category_options,
             # value=category_options[2]['value']
         ),
 
-        html.Label('Select Left Side Second Label', style={'color': '#0474BA'}),
+        html.Label('Select Left-side Second Label', style={'color': '#0474BA'}),
         dcc.Dropdown(
             id='left-side-second-label-dropdown',
             multi=False,
             # value=df[category_options[2]['value']].unique().tolist()[0]
         ),
 
-        html.Label('Select Left Side Field', style={'color': '#0474BA'}),
+        html.Label('Select Left-side Categories to Compare', style={'color': '#0474BA'}),
         dcc.Dropdown(
             id='left-side-field-dropdown',
             options=[{'label': field, 'value': field} for field in fields],
@@ -113,7 +113,7 @@ app.layout = html.Div([
 
     # Middle block
     html.Div([
-        html.H1("Exploratory Visualization"),
+        html.H1("Credit Score Demographic Exploratory for Marketing", style={'textAlign': 'center'}),
         # Category Dropdown
         html.Label('Select Category'),
         dcc.Dropdown(
@@ -123,7 +123,7 @@ app.layout = html.Div([
         ),
 
         # Dynamic Dropdowns for the first and second occupations
-        html.Label('Select Left-side Label', style={'color': '#0474BA'}),
+        html.Label('Select Left-side Demographic', style={'color': '#0474BA'}),
         dcc.Dropdown(
             id='first-occupation-dropdown',
             options=occupation_options,
@@ -133,7 +133,7 @@ app.layout = html.Div([
 
         html.Label('vs \n'),
 
-        html.Label('Select Right-side Label', style={'color': '#F79500'}),
+        html.Label('Select Right-side Demographic', style={'color': '#F79500'}),
         dcc.Dropdown(
             id='second-occupation-dropdown',
             options=occupation_options,
@@ -154,14 +154,14 @@ app.layout = html.Div([
         html.H3(id='right-occupation-name', style={'color': '#F79500'}),
 
         # Four dropdowns for the right side
-        html.Label('Select Right Side Category', style={'color': '#F79500'}),
+        html.Label('Select Right-side Category', style={'color': '#F79500'}),
         dcc.Dropdown(
             id='right-side-category-dropdown',
             # options=category_options,
             # value=category_options[1]['value']
         ),
 
-        html.Label('Select Right Side Label', style={'color': '#F79500'}),
+        html.Label('Select Right-side Demographic', style={'color': '#F79500'}),
         dcc.Dropdown(
             id='right-side-label-dropdown',
             options=occupation_options,
@@ -169,14 +169,14 @@ app.layout = html.Div([
             # value=occupation_options[0]['value']
         ),
 
-        html.Label('Select Right Side Second Category', style={'color': '#F79500'}),
+        html.Label('Select Right-side Second Category', style={'color': '#F79500'}),
         dcc.Dropdown(
             id='right-side-second-category-dropdown',
             # options=category_options,
             # value=category_options[2]['value']
         ),
 
-        html.Label('Select Right Side Second Label', style={'color': '#F79500'}),
+        html.Label('Select Right-side Second Label', style={'color': '#F79500'}),
         dcc.Dropdown(
             id='right-side-second-label-dropdown',
             options=occupation_options,
@@ -184,7 +184,7 @@ app.layout = html.Div([
             # value=occupation_options[0]['value']
         ),
 
-        html.Label('Select Right Side Field', style={'color': '#F79500'}),
+        html.Label('Select Right-side Categories to Compare', style={'color': '#F79500'}),
         dcc.Dropdown(
             id='right-side-field-dropdown',
             options=[{'label': field, 'value': field} for field in fields],
