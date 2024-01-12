@@ -465,8 +465,7 @@ def update_bar_chart_left(main_category, selected_category, selected_label, seco
             text=f'{left_occupation}s\' {selected_field} by {unchosen_category}',
             font=dict(color='#0474BA')
         ),
-        xaxis={'title': unchosen_category},
-        yaxis={'title': f'Mean {selected_field}'}
+        xaxis={'title': f'Mean {selected_field}'}
     )
     return go.Figure(data=[trace], layout=layout)
 
@@ -543,8 +542,7 @@ def update_bar_chart_right(main_category, selected_category, selected_label, sec
             text=f'{right_occupation}s\' {selected_field} by {unchosen_category}',
             font=dict(color='#F79500')
         ),
-        xaxis={'title': unchosen_category},
-        yaxis={'title': f'Mean {selected_field}'},
+        xaxis={'title': f'Mean {selected_field}'},
 
     )
     return go.Figure(data=[trace], layout=layout)
