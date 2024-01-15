@@ -1,4 +1,5 @@
 import math
+import numpy as np
 import dash
 import pandas as pd
 import plotly.graph_objects as go
@@ -778,6 +779,71 @@ def update_output(first_occupation, second_occupation, selected_category):
         ))
 
     # Making fig2 pcp with go.parcoods
+    def freedman_diaconis_bin_width(data):
+        # Convert data to numeric type
+        data_numeric = pd.to_numeric(data, errors='coerce').dropna()
+
+        # Check if there are values in the numeric data
+        if len(data_numeric) == 0:
+            return 0  # Return 0 or another appropriate default value
+
+        # Calculate percentiles on numeric data
+        q75, q25 = np.percentile(data_numeric, [75, 25])
+        iqr = q75 - q25
+        n = len(data_numeric)
+
+        # Check for non-zero length before calculating bin_width
+        bin_width = 2 * iqr / (n ** (1 / 3)) if n > 0 else 0
+
+        return bin_width
+
+    def cluster_values_with_freedman_diaconis(df):
+        clusters = {}
+
+        # Determine the common length for clusters
+        common_length = np.inf
+
+        for column in df.columns:
+            data = df[column].dropna()  # Drop missing values
+            data_numeric = pd.to_numeric(data, errors='coerce').dropna()  # Convert to numeric
+            bin_width = freedman_diaconis_bin_width(data_numeric)
+
+            # Check if bin_width is 0 or NaN, set a default value (e.g., 1)
+            bin_width = max(bin_width, 1)
+
+            # Check for an empty data_numeric array
+            if len(data_numeric) == 0:
+                # Set default values for minimum and maximum
+                min_value, max_value = 0, 1
+            else:
+                min_value, max_value = np.nanmin(data_numeric), np.nanmax(data_numeric)
+
+            # Use linspace with a maximum number of points
+            max_points = 1000  # Set a reasonable maximum number of points
+            bins = np.linspace(min_value, max_value, num=min(max_points, int((max_value - min_value) / bin_width) + 1))
+
+            # Store clusters with common length
+            clusters[column] = np.digitize(data_numeric, bins)
+            common_length = min(common_length, len(clusters[column]))
+
+        # Ensure all clusters have the same length
+        for column in df.columns:
+            clusters[column] = clusters[column][:common_length]
+
+        return clusters
+
+    clustered_data = cluster_values_with_freedman_diaconis(df)
+
+    # Create a DataFrame with the original data and cluster assignments
+    clustered_df = pd.DataFrame(clustered_data)
+
+    # Add the original values to the clustered DataFrame
+    for column in df.columns:
+        clustered_df[column] = df[column]
+
+    for column in clustered_df.columns:
+        df[column] = clustered_df[column]
+
     for field in fields:
         if selected_category == 'Loan_Type':
             masked_field = df[(df[first_occupation] == 1) | (df[second_occupation] == 1)][field]
