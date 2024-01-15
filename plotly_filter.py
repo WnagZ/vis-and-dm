@@ -1,13 +1,9 @@
-
-import pandas as pd
+import math
 import dash
+import pandas as pd
+import plotly.graph_objects as go
 from dash import dcc, html
 from dash.dependencies import Input, Output
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
-import math
-import re
 
 app = dash.Dash(__name__)
 df = pd.read_csv('filled_data.csv')
@@ -61,146 +57,192 @@ category_options = [
 fields = ['Credit_Utilization_Ratio', 'Total_EMI_per_month', 'Outstanding_Debt',
           'Interest_Rate', 'Num_of_Loan', 'Delay_from_due_date', 'Num_of_Delayed_Payment']
 
+scatterpolar_middle = go.Figure()
+pcp_plot = go.Figure()
+
 app.layout = html.Div([
-    # Left block
-    html.Div([
-        # Occupation name at the top
-        html.H3(id='left-occupation-name', style={'color': '#0474BA'}),
-
-        # Four dropdowns for the left side
-        html.Label('Select Left-side Category', style={'color': '#0474BA'}),
-        dcc.Dropdown(
-            id='left-side-category-dropdown',
-            # options=category_options,
-            # value=category_options[1]['value'],
-        ),
-
-        html.Label('Select Left-side Demographic', style={'color': '#0474BA'}),
-        dcc.Dropdown(
-            id='left-side-label-dropdown',
-            multi=False,
-            # value=df[category_options[1]['value']].unique().tolist()[0]
-        ),
-
-        html.Label('Select Left-side Second Category', style={'color': '#0474BA'}),
-        dcc.Dropdown(
-            id='left-side-second-category-dropdown',
-            # options=category_options,
-            # value=category_options[2]['value']
-        ),
-
-        html.Label('Select Left-side Second Label', style={'color': '#0474BA'}),
-        dcc.Dropdown(
-            id='left-side-second-label-dropdown',
-            multi=False,
-            # value=df[category_options[2]['value']].unique().tolist()[0]
-        ),
-
-        html.Label('Select Left-side Categories to Compare', style={'color': '#0474BA'}),
-        dcc.Dropdown(
-            id='left-side-field-dropdown',
-            options=[{'label': field, 'value': field} for field in fields],
-            value=fields[0]
-        ),
-
-        # Bar chart for left side
-        dcc.Graph(id='bar-chart-left'),
-
-        # Scatterpolar graph for left side
-        dcc.Graph(id='scatterpolar-left'),
-
-    ], style={'width': '33%', 'display': 'inline-block'}),
-
-    # Middle block
     html.Div([
         html.H1("Credit Score Demographic Exploratory for Marketing", style={'textAlign': 'center',
-                                                                             'fontFamily': 'Trebuchet MS' }),
-        # Category Dropdown
-        html.Label('Select Category'),
-        dcc.Dropdown(
-            id='category-dropdown',
-            options=category_options,
-            value='Occupation'
-        ),
+                                                                             'fontFamily': 'Trebuchet MS'}),
+        dcc.Checklist(
+            id= 'sides-checklist',
+            options=[
+                {'label': 'In-depth Left Side', 'value': 'left'},
+                {'label': 'In-depth Right Side', 'value': 'right'}
+            ],
+            style={'textAlign': 'center'})
 
-        # Dynamic Dropdowns for the first and second occupations
-        html.Label('Select Left-side Demographic', style={'color': '#0474BA'}),
-        dcc.Dropdown(
-            id='first-occupation-dropdown',
-            options=occupation_options,
-            multi=False,
-            # value=occupation_options[0]['value']
-        ),
-
-        html.Label('vs \n'),
-
-        html.Label('Select Right-side Demographic', style={'color': '#F79500'}),
-        dcc.Dropdown(
-            id='second-occupation-dropdown',
-            options=occupation_options,
-            multi=False,
-            # value=occupation_options[1]['value']
-        ),
-
-        # Scatterpolar graph for displaying selected values
-        dcc.Graph(id='scatterpolar-middle'),
-
-        # Pcp graph for displaying selected values
-        dcc.Graph(id='pcp'),
-    ], style={'width': '33%', 'display': 'inline-block'}),
-
-    # Right block
+    ], style={'display': 'flex', 'flexDirection': 'column', 'alignItems': 'center', 'justifyContent': 'center'}),
     html.Div([
-        # Occupation name at the top
-        html.H3(id='right-occupation-name', style={'color': '#F79500'}),
+    # Left block
+        html.Div([
 
-        # Four dropdowns for the right side
-        html.Label('Select Right-side Category', style={'color': '#F79500'}),
-        dcc.Dropdown(
-            id='right-side-category-dropdown',
-            # options=category_options,
-            # value=category_options[1]['value']
-        ),
+            # Occupation name at the top
+            html.H3(id='left-occupation-name', style={'color': '#0474BA'}),
 
-        html.Label('Select Right-side Demographic', style={'color': '#F79500'}),
-        dcc.Dropdown(
-            id='right-side-label-dropdown',
-            options=occupation_options,
-            multi=False,
-            # value=occupation_options[0]['value']
-        ),
+            # Four dropdowns for the left side
+            html.Label('Select Left-side Category', style={'color': '#0474BA'}),
+            dcc.Dropdown(
+                id='left-side-category-dropdown',
+                # options=category_options,
+                # value=category_options[1]['value'],
+            ),
 
-        html.Label('Select Right-side Second Category', style={'color': '#F79500'}),
-        dcc.Dropdown(
-            id='right-side-second-category-dropdown',
-            # options=category_options,
-            # value=category_options[2]['value']
-        ),
+            html.Label('Select Left-side Demographic', style={'color': '#0474BA'}),
+            dcc.Dropdown(
+                id='left-side-label-dropdown',
+                multi=False,
+                # value=df[category_options[1]['value']].unique().tolist()[0]
+            ),
 
-        html.Label('Select Right-side Second Label', style={'color': '#F79500'}),
-        dcc.Dropdown(
-            id='right-side-second-label-dropdown',
-            options=occupation_options,
-            multi=False,
-            # value=occupation_options[0]['value']
-        ),
+            html.Label('Select Left-side Second Category', style={'color': '#0474BA'}),
+            dcc.Dropdown(
+                id='left-side-second-category-dropdown',
+                # options=category_options,
+                # value=category_options[2]['value']
+            ),
 
-        html.Label('Select Right-side Categories to Compare', style={'color': '#F79500'}),
-        dcc.Dropdown(
-            id='right-side-field-dropdown',
-            options=[{'label': field, 'value': field} for field in fields],
-            value=fields[0]
-        ),
+            html.Label('Select Left-side Second Label', style={'color': '#0474BA'}),
+            dcc.Dropdown(
+                id='left-side-second-label-dropdown',
+                multi=False,
+                # value=df[category_options[2]['value']].unique().tolist()[0]
+            ),
 
-        # Bar chart for right side
-        dcc.Graph(id='bar-chart-right'),
+            html.Label('Select Left-side Categories to Compare', style={'color': '#0474BA'}),
+            dcc.Dropdown(
+                id='left-side-field-dropdown',
+                options=[{'label': field, 'value': field} for field in fields],
+                value=fields[0]
+            ),
 
-        # Scatterpolar graph for right side
-        dcc.Graph(id='scatterpolar-right'),
+            # Bar chart for left side
+            dcc.Graph(id='bar-chart-left'),
 
-    ], style={'width': '33%', 'display': 'inline-block'}),
+            # Scatterpolar graph for left side
+            dcc.Graph(id='scatterpolar-left'),
 
-])
+        ], style={'width': '25%', 'display': 'inline-block'},
+        id='left-block'),
+
+        # Middle block
+        html.Div([
+            # Category Dropdown
+            html.Label('Select Category'),
+            dcc.Dropdown(
+                id='category-dropdown',
+                options=category_options,
+                value='Occupation'
+            ),
+
+            # Dynamic Dropdowns for the first and second occupations
+            html.Label('Select Left-side Demographic', style={'color': '#0474BA'}),
+            dcc.Dropdown(
+                id='first-occupation-dropdown',
+                options=occupation_options,
+                multi=False,
+                # value=occupation_options[0]['value']
+            ),
+
+            html.Label('vs \n'),
+
+            html.Label('Select Right-side Demographic', style={'color': '#F79500'}),
+            dcc.Dropdown(
+                id='second-occupation-dropdown',
+                options=occupation_options,
+                multi=False,
+                # value=occupation_options[1]['value']
+            ),
+
+            # Scatterpolar graph for displaying selected values
+            dcc.Graph(id='scatterpolar-middle',
+                      responsive=True),
+
+            # Pcp graph for displaying selected values
+            dcc.Graph(id='pcp',
+                      responsive=True),
+        ], style={'width': '50%', 'display': 'inline-block'},
+        id='middle-block'),
+
+        # Right block
+        html.Div([
+            # Occupation name at the top
+            html.H3(id='right-occupation-name', style={'color': '#F79500'}),
+
+            # Four dropdowns for the right side
+            html.Label('Select Right-side Category', style={'color': '#F79500'}),
+            dcc.Dropdown(
+                id='right-side-category-dropdown',
+                # options=category_options,
+                # value=category_options[1]['value']
+            ),
+
+            html.Label('Select Right-side Demographic', style={'color': '#F79500'}),
+            dcc.Dropdown(
+                id='right-side-label-dropdown',
+                options=occupation_options,
+                multi=False,
+                # value=occupation_options[0]['value']
+            ),
+
+            html.Label('Select Right-side Second Category', style={'color': '#F79500'}),
+            dcc.Dropdown(
+                id='right-side-second-category-dropdown',
+                # options=category_options,
+                # value=category_options[2]['value']
+            ),
+
+            html.Label('Select Right-side Second Label', style={'color': '#F79500'}),
+            dcc.Dropdown(
+                id='right-side-second-label-dropdown',
+                options=occupation_options,
+                multi=False,
+                # value=occupation_options[0]['value']
+            ),
+
+            html.Label('Select Right-side Categories to Compare', style={'color': '#F79500'}),
+            dcc.Dropdown(
+                id='right-side-field-dropdown',
+                options=[{'label': field, 'value': field} for field in fields],
+                value=fields[0]
+            ),
+
+            # Bar chart for right side
+            dcc.Graph(id='bar-chart-right'),
+
+            # Scatterpolar graph for right side
+            dcc.Graph(id='scatterpolar-right'),
+
+        ], style={'width': '25%', 'display': 'inline-block'},
+        id='right-block'),
+
+    ])
+], style={'fontFamily': 'Trebuchet MS'})
+
+@app.callback(
+    [Output('left-block', 'style'),
+     Output('middle-block', 'style'),
+     Output('right-block', 'style')],
+    [Input('sides-checklist', 'value')]
+)
+def show_sides(selected_sides):
+    left_display = {'width': '25%', 'display': 'none'}
+    middle_display = {'width': '50%', 'display': 'inline-block', 'alignItems': 'center', 'justifyContent': 'center'}
+    right_display = {'width': '25%', 'display': 'none'}
+    if selected_sides is not None:
+        print(selected_sides)
+        if len(selected_sides) == 1:
+            middle_size = 70
+            side_size = 30
+        else:
+            middle_size = 50
+            side_size = 25
+        if 'left' in selected_sides:
+            left_display = {'width': f'{side_size}%', 'display': 'inline-block'}
+        if 'right' in selected_sides:
+            right_display = {'width': f'{side_size}%', 'display': 'inline-block'}
+        middle_display = {'width': f'{middle_size}%', 'display': 'inline-block'}
+    return left_display, middle_display, right_display
 
 
 # Callback to dynamically update the options of the first occupation dropdown
@@ -352,24 +394,6 @@ def get_options_and_defaults_second_category(selected_category, options):
 
 # Helper function to get options and default values based on selected category
 def get_options_and_defaults(selected_category):
-    #     # Set default values based on the selected category
-    #     if selected_category == 'Occupation':
-    #         options = occupation_options
-    #         values = [options[0]['value']] if options else []
-    #     elif selected_category == 'Grouped_Age':
-    #         options = age_options
-    #         values = [options[0]['value']] if options else []
-    #     elif selected_category == 'Grouped_Annual_Income':
-    #         options = income_options
-    #         values = [options[0]['value']] if options else []
-    #     elif selected_category == 'Loan_Type':
-    #         options = loan_options
-    #         values = [options[0]['value']] if options else []
-    #     else:
-    #         options = []
-    #         values = []
-    # else:
-    #     # Retrieve values from the callback inputs
     options = get_options_based_on_category(selected_category)
     values = options[0]['value'] if options else ''
 
@@ -727,7 +751,6 @@ def update_output(first_occupation, second_occupation, selected_category):
     selected_values += [second_occupation] if isinstance(second_occupation, str) else second_occupation
 
     # Making fig1 scatterpolar
-    fig1 = go.Figure()
     dimensions = []
     for i, value in enumerate(selected_values):
         mean_table = []
@@ -747,7 +770,7 @@ def update_output(first_occupation, second_occupation, selected_category):
 
         meanlist = ["Mean " + x for x in fields]
 
-        fig1.add_trace(go.Scatterpolar(
+        scatterpolar_middle.add_trace(go.Scatterpolar(
             r=mean_table,
             theta=meanlist,
             name=value,
@@ -765,21 +788,29 @@ def update_output(first_occupation, second_occupation, selected_category):
                  values=masked_field))
 
     if selected_category == 'Loan_Type':
-        fig2 = go.Figure(data=
+        pcp_plot = go.Figure(data=
         go.Parcoords(
             line=dict(color=df[first_occupation].astype('category').cat.codes,
                       showscale=True),
             dimensions=dimensions,
         ))
     else:
-        fig2 = go.Figure(
+        pcp_plot = go.Figure(
         go.Parcoords(
             line=dict(color=df[selected_category].astype('category').cat.codes,
                       showscale=True),
             dimensions=dimensions,
+
         ))
-    fig2.update_xaxes(tickangle=-90)
-    return fig1, fig2
+
+    scatterpolar_middle.update_layout(
+        autosize=True
+    )
+    pcp_plot.update_layout(
+        autosize=True
+    )
+
+    return scatterpolar_middle, pcp_plot
 
 
 if __name__ == '__main__':
