@@ -55,7 +55,7 @@ category_options = [
     {'label': 'Loan Type', 'value': 'Loan_Type'}
 ]
 
-fields = ['Credit_Utilization_Ratio', 'Total_EMI_per_month', 'Outstanding_Debt',
+fields = ['Credit_Utilization_Ratio', 'Outstanding_Debt',
           'Interest_Rate', 'Num_of_Loan', 'Delay_from_due_date', 'Num_of_Delayed_Payment']
 
 scatterpolar_middle = go.Figure()
@@ -65,15 +65,9 @@ app.layout = html.Div([
     html.Div([
         html.H1("Credit Score Demographic Exploratory for Marketing", style={'textAlign': 'center',
                                                                              'fontFamily': 'Trebuchet MS'}),
-        dcc.Checklist(
-            id='sides-checklist',
-            options=[
-                {'label': 'In-depth Left Side', 'value': 'left'},
-                {'label': 'In-depth Right Side', 'value': 'right'}
-            ],
-            style={'textAlign': 'center'})
 
-    ], style={'display': 'flex', 'flexDirection': 'column', 'alignItems': 'center', 'justifyContent': 'center'}),
+    ], style={'display': 'flex', 'flexDirection': 'column',
+              'alignItems': 'center', 'justifyContent': 'center'}),
     html.Div([
         # Left block
         html.Div([
@@ -128,32 +122,55 @@ app.layout = html.Div([
 
         # Middle block
         html.Div([
-            # Category Dropdown
-            html.Label('Select Category'),
-            dcc.Dropdown(
-                id='category-dropdown',
-                options=category_options,
-                value='Occupation'
-            ),
+            html.Div([
+                # Category Dropdown
+                html.Label('Select Category',
+                           style={'textAlign': 'center'}),
+                dcc.Dropdown(
+                    id='category-dropdown',
+                    options=category_options,
+                    value='Occupation',
+                    style={'width': '300px'}
+                ),
+            ], style={'display': 'flex', 'flexDirection': 'column',
+                      'alignItems': 'center', 'justifyContent': 'center'}),
+            html.Div([
+                # First demographic
+                html.Div([
+                    # Dynamic Dropdowns for the first and second occupations
+                    html.Label('Select Left-side Demographic', style={'color': '#0474BA'}),
+                    dcc.Dropdown(
+                        id='first-occupation-dropdown',
+                        options=occupation_options,
+                        multi=False,
+                        style={'width': '200px'}
+                        # value=occupation_options[0]['value']
+                    ),
+                    dcc.Checklist(
+                        id='left-side-checklist',
+                        options=[
+                            {'label': 'In-depth Left Side', 'value': 'left'},
+                        ])
+                ], style={'marginRight': '20px'}),
+                # Second demographic
+                html.Div([
+                    html.Label('Select Right-side Demographic', style={'color': '#F79500'}),
+                    dcc.Dropdown(
+                        id='second-occupation-dropdown',
+                        options=occupation_options,
+                        multi=False,
+                        style={'width': '200px'}
+                        # value=occupation_options[1]['value']
+                    ),
+                    dcc.Checklist(
+                        id='right-side-checklist',
+                        options=[
+                            {'label': 'In-depth Right Side', 'value': 'right'}
+                        ])
+                ]),
 
-            # Dynamic Dropdowns for the first and second occupations
-            html.Label('Select Left-side Demographic', style={'color': '#0474BA'}),
-            dcc.Dropdown(
-                id='first-occupation-dropdown',
-                options=occupation_options,
-                multi=False,
-                # value=occupation_options[0]['value']
-            ),
-
-            html.Label('vs \n'),
-
-            html.Label('Select Right-side Demographic', style={'color': '#F79500'}),
-            dcc.Dropdown(
-                id='second-occupation-dropdown',
-                options=occupation_options,
-                multi=False,
-                # value=occupation_options[1]['value']
-            ),
+            ], style={'display': 'flex', 'flexDirection': 'row',
+                      'alignItems': 'center', 'justifyContent': 'center'}),
 
             html.H5(id='pcp-label', style={'textAlign': 'center'}),
 
@@ -161,13 +178,12 @@ app.layout = html.Div([
             dcc.Graph(id='scatterpolar-middle',
                       responsive=True),
 
-
             # Pcp graph for displaying selected values
             dcc.Graph(id='pcp',
                       responsive=True),
 
-
-        ], style={'width': '50%', 'display': 'inline-block'},
+        ], style={'width': '50%', 'display': 'flex', 'flexDirection': 'column',
+                  'alignItems': 'center', 'justifyContent': 'center'},
             id='middle-block'),
 
         # Right block
@@ -222,34 +238,40 @@ app.layout = html.Div([
         ], style={'width': '25%', 'display': 'inline-block'},
             id='right-block'),
 
-    ])
+    ], id='display')
 ], style={'fontFamily': 'Trebuchet MS'})
 
 
 @app.callback(
     [Output('left-block', 'style'),
      Output('middle-block', 'style'),
-     Output('right-block', 'style')],
-    [Input('sides-checklist', 'value')]
+     Output('right-block', 'style'),
+     Output('display', 'style')],
+    [Input('left-side-checklist', 'value'),
+     Input('right-side-checklist', 'value')]
 )
-def show_sides(selected_sides):
+def show_sides(left_side, right_side):
     left_display = {'width': '25%', 'display': 'none'}
-    middle_display = {'width': '50%', 'display': 'inline-block', 'alignItems': 'center', 'justifyContent': 'center'}
     right_display = {'width': '25%', 'display': 'none'}
+    selected_sides = left_side if left_side is not None else []
+    selected_sides += right_side if right_side is not None else []
     if selected_sides is not None:
-        print(selected_sides)
-        if len(selected_sides) == 1:
+        if len(selected_sides) <= 1:
             middle_size = 70
             side_size = 30
         else:
             middle_size = 50
             side_size = 25
         if 'left' in selected_sides:
-            left_display = {'width': f'{side_size}%', 'display': 'inline-block'}
+            left_display = {'width': f'{side_size}%', 'display': 'flex', 'flexDirection': 'column'}
         if 'right' in selected_sides:
-            right_display = {'width': f'{side_size}%', 'display': 'inline-block'}
-        middle_display = {'width': f'{middle_size}%', 'display': 'inline-block'}
-    return left_display, middle_display, right_display
+            right_display = {'width': f'{side_size}%', 'display': 'flex', 'flexDirection': 'column'}
+        middle_display = {'width': f'{middle_size}%', 'display': 'flex', 'flexDirection': 'column',
+                          'alignItems': 'center', 'justifyContent': 'center'}
+        display = {'display': 'flex',
+                   'flexDirection': 'row', 'alignItems': 'center',
+                   'justifyContent': 'center'}
+        return left_display, middle_display, right_display, display
 
 
 # Callback to dynamically update the options of the first occupation dropdown
@@ -634,7 +656,7 @@ def update_scatterpolar_left(main_category, selected_category, selected_label, s
             label_data = filtered_data[filtered_data[main_category] == label]
         mean_value = label_data[selected_field].mean()
         if not math.isnan(mean_value):
-            values.append(mean_value)
+            values.append(math.log(round(mean_value)))
         else:
             values.append(None)
 
@@ -708,7 +730,7 @@ def update_scatterpolar_right(main_category, selected_category, selected_label, 
             label_data = filtered_data[filtered_data[main_category] == label]
         mean_value = label_data[selected_field].mean()
         if not math.isnan(mean_value):
-            values.append(mean_value)
+            values.append(math.log(round(mean_value)))
         else:
             values.append(None)
 
@@ -868,9 +890,9 @@ def update_output(first_occupation, second_occupation, selected_category):
         category_codes = masked_df[first_occupation].astype('category').cat.codes
         pcp_plot = go.Figure(data=
         go.Parcoords(
-            line=dict(color=category_codes,
-                      showscale=True),
+            line=dict(color=category_codes),
             dimensions=dimensions,
+
         ))
         pcp_label = ''
         for value, code in zip(masked_df[first_occupation].unique(), category_codes):
@@ -879,11 +901,11 @@ def update_output(first_occupation, second_occupation, selected_category):
             else:
                 pcp_label = f"{code}: {selected_values[value]}"
     else:
-        category_codes = pd.Categorical(masked_df[selected_category], categories=masked_df[selected_category].unique()).codes
+        category_codes = pd.Categorical(masked_df[selected_category],
+                                        categories=masked_df[selected_category].unique()).codes
         pcp_plot = go.Figure(
             go.Parcoords(
-                line=dict(color=category_codes,
-                          showscale=True),
+                line=dict(color=category_codes),
                 dimensions=dimensions,
             ))
         pcp_label = ''
