@@ -155,15 +155,18 @@ app.layout = html.Div([
                 # value=occupation_options[1]['value']
             ),
 
+            html.H5(id='pcp-label', style={'textAlign': 'center'}),
+
             # Scatterpolar graph for displaying selected values
             dcc.Graph(id='scatterpolar-middle',
                       responsive=True),
+
 
             # Pcp graph for displaying selected values
             dcc.Graph(id='pcp',
                       responsive=True),
 
-            html.H5(id='pcp-label', style={'textAlign': 'center'})
+
         ], style={'width': '50%', 'display': 'inline-block'},
             id='middle-block'),
 
@@ -494,7 +497,7 @@ def update_bar_chart_left(main_category, selected_category, selected_label, seco
             text=f'{left_occupation}s\' {selected_field.replace("_", " ")} by {unchosen_category.replace("_", " ")}',
             font=dict(color='#0474BA')
         ),
-        xaxis={'title': f'Mean {selected_field}'}
+        xaxis={'title': f'Mean {selected_field.replace("_", " ")}'}
     )
     return go.Figure(data=[trace], layout=layout)
 
@@ -570,7 +573,7 @@ def update_bar_chart_right(main_category, selected_category, selected_label, sec
             text=f'{right_occupation}s\' {selected_field.replace("_", " ")} by {unchosen_category.replace("_", " ")}',
             font=dict(color='#F79500')
         ),
-        xaxis={'title': f'Mean {selected_field}'},
+        xaxis={'title': f'Mean {selected_field.replace("_", " ")}'},
 
     )
     return go.Figure(data=[trace], layout=layout)
