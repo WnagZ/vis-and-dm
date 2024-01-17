@@ -71,9 +71,47 @@ app.layout = html.Div([
     html.Div([
         # Left block
         html.Div([
+            # Demographic name at the top
+            html.H3(id='left-demographic-name', style={'color': '#0474BA', 'textAlign': 'center'}),
 
-            # Occupation name at the top
-            html.H3(id='left-occupation-name', style={'color': '#0474BA'}),
+            # Dropdowns for x and y
+            html.Div([
+                # Select x
+                html.Div([
+                    html.Label('Select x', style={'color': '#0474BA'}),
+                    dcc.Dropdown(
+                        id='left-side-select-x-dropdown',
+                        options=[{'label': field, 'value': field} for field in fields],
+                        value=fields[0],
+                        style={'width': '230px'}
+                    )
+                ], style={'marginRight': '20px'}),
+                # Select y
+                html.Div([
+                    html.Label('Select y', style={'color': '#F79500'}),
+                    dcc.Dropdown(
+                        id='left-side-select-y-dropdown',
+                        options=[{'label': field, 'value': field} for field in fields],
+                        value=fields[1],
+                        style={'width': '230px'}
+                    )
+                ]),
+            ], style={'display': 'flex', 'flexDirection': 'row',
+                      'alignItems': 'center', 'justifyContent': 'center'}),
+            dcc.Graph(id='left-side-scatterplot',
+                      responsive=True),
+
+            # Two bar plots
+            html.Div([
+                dcc.Graph(id='left-side-first-barplot',
+                          responsive=True,
+                          style={'width': '250px', 'height': '250px'}),
+                dcc.Graph(id='left-side-second-barplot',
+                          responsive=True,
+                          style={'width': '250px', 'height': '250px'})
+            ], style={'display': 'flex', 'flexDirection': 'row',
+                      'alignItems': 'center', 'justifyContent': 'center'}),
+
 
             # Four dropdowns for the left side
             html.Label('Select Left-side Category', style={'color': '#0474BA'}),
@@ -85,8 +123,7 @@ app.layout = html.Div([
 
             html.Label('Select Left-side Demographic', style={'color': '#0474BA'}),
             dcc.Dropdown(
-                id='left-side-label-dropdown',
-                multi=False,
+                id='left-side-label-dropdown'
                 # value=df[category_options[1]['value']].unique().tolist()[0]
             ),
 
@@ -99,8 +136,7 @@ app.layout = html.Div([
 
             html.Label('Select Left-side Second Label', style={'color': '#0474BA'}),
             dcc.Dropdown(
-                id='left-side-second-label-dropdown',
-                multi=False,
+                id='left-side-second-label-dropdown'
                 # value=df[category_options[2]['value']].unique().tolist()[0]
             ),
 
@@ -117,8 +153,7 @@ app.layout = html.Div([
             # Scatterpolar graph for left side
             dcc.Graph(id='scatterpolar-left'),
 
-        ], style={'width': '25%', 'display': 'inline-block'},
-            id='left-block'),
+        ], style={'width': '25%', 'display': 'inline-'}, id='left-block'),
 
         # Middle block
         html.Div([
@@ -188,8 +223,45 @@ app.layout = html.Div([
 
         # Right block
         html.Div([
-            # Occupation name at the top
-            html.H3(id='right-occupation-name', style={'color': '#F79500'}),
+            # Demographic name at the top
+            html.H3(id='right-demographic-name', style={'color': '#F79500'}),
+            # Dropdowns for x and y
+            html.Div([
+                # Select x
+                html.Div([
+                    html.Label('Select x', style={'color': '#0474BA'}),
+                    dcc.Dropdown(
+                        id='right-side-select-x-dropdown',
+                        options=[{'label': field, 'value': field} for field in fields],
+                        value=fields[0],
+                        style={'width': '230px'}
+                    )
+                ], style={'marginRight': '20px'}),
+                # Select y
+                html.Div([
+                    html.Label('Select y', style={'color': '#F79500'}),
+                    dcc.Dropdown(
+                        id='right-side-select-y-dropdown',
+                        options=[{'label': field, 'value': field} for field in fields],
+                        value=fields[1],
+                        style={'width': '230px'}
+                    )
+                ]),
+            ], style={'display': 'flex', 'flexDirection': 'row',
+                      'alignItems': 'center', 'justifyContent': 'center'}),
+            dcc.Graph(id='right-side-scatterplot',
+                      responsive=True),
+
+            # Two bar plots
+            html.Div([
+                dcc.Graph(id='right-side-first-barplot',
+                          responsive=True,
+                          style={'width': '250px', 'height': '250px'}),
+                dcc.Graph(id='right-side-second-barplot',
+                          responsive=True,
+                          style={'width': '250px', 'height': '250px'})
+            ], style={'display': 'flex', 'flexDirection': 'row',
+                      'alignItems': 'center', 'justifyContent': 'center'}),
 
             # Four dropdowns for the right side
             html.Label('Select Right-side Category', style={'color': '#F79500'}),
@@ -269,8 +341,8 @@ def show_sides(left_side, right_side):
         middle_display = {'width': f'{middle_size}%', 'display': 'flex', 'flexDirection': 'column',
                           'alignItems': 'center', 'justifyContent': 'center'}
         display = {'display': 'flex',
-                   'flexDirection': 'row', 'alignItems': 'center',
-                   'justifyContent': 'center'}
+                   'flexDirection': 'row', 'alignItems': 'flex-start',
+                   'justifyContent': 'center', }
         return left_display, middle_display, right_display, display
 
 
@@ -603,8 +675,8 @@ def update_bar_chart_right(main_category, selected_category, selected_label, sec
 
 # Callbacks for updating the occupation names in the left and right side blocks
 @app.callback(
-    [Output('left-occupation-name', 'children'),
-     Output('right-occupation-name', 'children')],
+    [Output('left-demographic-name', 'children'),
+     Output('right-demographic-name', 'children')],
     [Input('first-occupation-dropdown', 'value'),
      Input('second-occupation-dropdown', 'value')]
 )
