@@ -66,7 +66,7 @@ app.layout = html.Div([
         html.H1("Credit Score Demographic Exploratory for Marketing", style={'textAlign': 'center',
                                                                              'fontFamily': 'Trebuchet MS'}),
         dcc.Checklist(
-            id= 'sides-checklist',
+            id='sides-checklist',
             options=[
                 {'label': 'In-depth Left Side', 'value': 'left'},
                 {'label': 'In-depth Right Side', 'value': 'right'}
@@ -75,7 +75,7 @@ app.layout = html.Div([
 
     ], style={'display': 'flex', 'flexDirection': 'column', 'alignItems': 'center', 'justifyContent': 'center'}),
     html.Div([
-    # Left block
+        # Left block
         html.Div([
 
             # Occupation name at the top
@@ -124,7 +124,7 @@ app.layout = html.Div([
             dcc.Graph(id='scatterpolar-left'),
 
         ], style={'width': '25%', 'display': 'inline-block'},
-        id='left-block'),
+            id='left-block'),
 
         # Middle block
         html.Div([
@@ -162,8 +162,10 @@ app.layout = html.Div([
             # Pcp graph for displaying selected values
             dcc.Graph(id='pcp',
                       responsive=True),
+
+            html.H5(id='pcp-label', style={'textAlign': 'center'})
         ], style={'width': '50%', 'display': 'inline-block'},
-        id='middle-block'),
+            id='middle-block'),
 
         # Right block
         html.Div([
@@ -215,10 +217,11 @@ app.layout = html.Div([
             dcc.Graph(id='scatterpolar-right'),
 
         ], style={'width': '25%', 'display': 'inline-block'},
-        id='right-block'),
+            id='right-block'),
 
     ])
 ], style={'fontFamily': 'Trebuchet MS'})
+
 
 @app.callback(
     [Output('left-block', 'style'),
@@ -326,6 +329,7 @@ def update_left_side_label_dropdown_options(selected_category):
 )
 def update_left_side_second_label_dropdown_options(selected_category):
     return get_options_and_defaults(selected_category)
+
 
 @app.callback(
     [Output('right-side-category-dropdown', 'options'),
@@ -508,7 +512,6 @@ def update_bar_chart_left(main_category, selected_category, selected_label, seco
 )
 def update_bar_chart_right(main_category, selected_category, selected_label, second_category, second_label,
                            selected_field, right_occupation):
-
     if any(item is None for item in
            [main_category, selected_category, selected_label, second_category, second_label,
             selected_field]):
@@ -559,7 +562,7 @@ def update_bar_chart_right(main_category, selected_category, selected_label, sec
         x=values,
         name=selected_field,
         marker=dict(color='#F79500'),
-        orientation = 'h'
+        orientation='h'
     )
 
     layout = go.Layout(
@@ -608,7 +611,6 @@ def update_scatterpolar_left(main_category, selected_category, selected_label, s
     else:
         main_category_labels = df[main_category].unique()
 
-
     # Filter the database based on left-side category labels and second category labels
     if selected_category == 'Loan_Type':
         filtered_data = df[df[selected_label] == 1]
@@ -629,7 +631,7 @@ def update_scatterpolar_left(main_category, selected_category, selected_label, s
             label_data = filtered_data[filtered_data[main_category] == label]
         mean_value = label_data[selected_field].mean()
         if not math.isnan(mean_value):
-            values.append(math.log(round(mean_value)))
+            values.append(mean_value)
         else:
             values.append(None)
 
@@ -656,8 +658,6 @@ def update_scatterpolar_left(main_category, selected_category, selected_label, s
         ),
         polar=dict(radialaxis=dict(visible=True)),
         showlegend=True)
-
-
 
     return go.Figure(data=[trace], layout=layout)
 
@@ -705,7 +705,7 @@ def update_scatterpolar_right(main_category, selected_category, selected_label, 
             label_data = filtered_data[filtered_data[main_category] == label]
         mean_value = label_data[selected_field].mean()
         if not math.isnan(mean_value):
-            values.append(math.log(round(mean_value)))
+            values.append(mean_value)
         else:
             values.append(None)
 
@@ -738,7 +738,8 @@ def update_scatterpolar_right(main_category, selected_category, selected_label, 
 # Callback to update the output div based on the selected occupations
 @app.callback(
     [Output('scatterpolar-middle', 'figure'),
-     Output('pcp', 'figure')],
+     Output('pcp', 'figure'),
+     Output('pcp-label', 'children')],
     [Input('first-occupation-dropdown', 'value'),
      Input('second-occupation-dropdown', 'value'),
      Input('category-dropdown', 'value')]
@@ -751,6 +752,7 @@ def update_output(first_occupation, second_occupation, selected_category):
     selected_values = [first_occupation] if isinstance(first_occupation, str) else first_occupation
     selected_values += [second_occupation] if isinstance(second_occupation, str) else second_occupation
 
+    scatterpolar_middle = go.Figure()
     # Making fig1 scatterpolar
     dimensions = []
     for i, value in enumerate(selected_values):
@@ -769,7 +771,7 @@ def update_output(first_occupation, second_occupation, selected_category):
         # Define color for the trace
         trace_color = '#0474BA' if i == 0 else '#F79500'
 
-        meanlist = ["Mean " + x for x in fields]
+        meanlist = ["Mean " + x.replace("_", " ") for x in fields]
 
         scatterpolar_middle.add_trace(go.Scatterpolar(
             r=mean_table,
@@ -778,105 +780,114 @@ def update_output(first_occupation, second_occupation, selected_category):
             line=dict(color=trace_color)  # Set the line color
         ))
 
-    # Making fig2 pcp with go.parcoods
-    def freedman_diaconis_bin_width(data):
-        # Convert data to numeric type
-        data_numeric = pd.to_numeric(data, errors='coerce').dropna()
+    # # Making fig2 pcp with go.parcoods
+    # def freedman_diaconis_bin_width(data):
+    #     # Convert data to numeric type
+    #     data_numeric = pd.to_numeric(data, errors='coerce').dropna()
+    #
+    #     # Check if there are values in the numeric data
+    #     if len(data_numeric) == 0:
+    #         return 0  # Return 0 or another appropriate default value
+    #
+    #     # Calculate percentiles on numeric data
+    #     q75, q25 = np.percentile(data_numeric, [75, 25])
+    #     iqr = q75 - q25
+    #     n = len(data_numeric)
+    #
+    #     # Check for non-zero length before calculating bin_width
+    #     bin_width = 2 * iqr / (n ** (1 / 3)) if n > 0 else 0
+    #
+    #     return bin_width
+    #
+    # def cluster_values_with_freedman_diaconis(df):
+    #     clusters = {}
+    #
+    #     # Determine the common length for clusters
+    #     common_length = np.inf
+    #
+    #     for column in df.columns:
+    #         data = df[column].dropna()  # Drop missing values
+    #         data_numeric = pd.to_numeric(data, errors='coerce').dropna()  # Convert to numeric
+    #         bin_width = freedman_diaconis_bin_width(data_numeric)
+    #
+    #         # Check if bin_width is 0 or NaN, set a default value (e.g., 1)
+    #         bin_width = max(bin_width, 1)
+    #
+    #         # Check for an empty data_numeric array
+    #         if len(data_numeric) == 0:
+    #             # Set default values for minimum and maximum
+    #             min_value, max_value = 0, 1
+    #         else:
+    #             min_value, max_value = np.nanmin(data_numeric), np.nanmax(data_numeric)
+    #
+    #         # Use linspace with a maximum number of points
+    #         max_points = 1000  # Set a reasonable maximum number of points
+    #         bins = np.linspace(min_value, max_value, num=min(max_points, int((max_value - min_value) / bin_width) + 1))
+    #
+    #         # Store clusters with common length
+    #         clusters[column] = np.digitize(data_numeric, bins)
+    #         common_length = min(common_length, len(clusters[column]))
+    #
+    #     # Ensure all clusters have the same length
+    #     for column in df.columns:
+    #         clusters[column] = clusters[column][:common_length]
+    #
+    #     return clusters
+    #
+    # clustered_data = cluster_values_with_freedman_diaconis(df)
+    #
+    # # Create a DataFrame with the original data and cluster assignments
+    # clustered_df = pd.DataFrame(clustered_data)
 
-        # Check if there are values in the numeric data
-        if len(data_numeric) == 0:
-            return 0  # Return 0 or another appropriate default value
+    # # Add the original values to the clustered DataFrame
+    # for column in df.columns:
+    #     clustered_df[column] = df[column]
+    #
+    # for column in clustered_df.columns:
+    #     df[column] = clustered_df[column]
 
-        # Calculate percentiles on numeric data
-        q75, q25 = np.percentile(data_numeric, [75, 25])
-        iqr = q75 - q25
-        n = len(data_numeric)
-
-        # Check for non-zero length before calculating bin_width
-        bin_width = 2 * iqr / (n ** (1 / 3)) if n > 0 else 0
-
-        return bin_width
-
-    def cluster_values_with_freedman_diaconis(df):
-        clusters = {}
-
-        # Determine the common length for clusters
-        common_length = np.inf
-
-        for column in df.columns:
-            data = df[column].dropna()  # Drop missing values
-            data_numeric = pd.to_numeric(data, errors='coerce').dropna()  # Convert to numeric
-            bin_width = freedman_diaconis_bin_width(data_numeric)
-
-            # Check if bin_width is 0 or NaN, set a default value (e.g., 1)
-            bin_width = max(bin_width, 1)
-
-            # Check for an empty data_numeric array
-            if len(data_numeric) == 0:
-                # Set default values for minimum and maximum
-                min_value, max_value = 0, 1
-            else:
-                min_value, max_value = np.nanmin(data_numeric), np.nanmax(data_numeric)
-
-            # Use linspace with a maximum number of points
-            max_points = 1000  # Set a reasonable maximum number of points
-            bins = np.linspace(min_value, max_value, num=min(max_points, int((max_value - min_value) / bin_width) + 1))
-
-            # Store clusters with common length
-            clusters[column] = np.digitize(data_numeric, bins)
-            common_length = min(common_length, len(clusters[column]))
-
-        # Ensure all clusters have the same length
-        for column in df.columns:
-            clusters[column] = clusters[column][:common_length]
-
-        return clusters
-
-    clustered_data = cluster_values_with_freedman_diaconis(df)
-
-    # Create a DataFrame with the original data and cluster assignments
-    clustered_df = pd.DataFrame(clustered_data)
-
-    # Add the original values to the clustered DataFrame
-    for column in df.columns:
-        clustered_df[column] = df[column]
-
-    for column in clustered_df.columns:
-        df[column] = clustered_df[column]
-
+    masked_df = pd.DataFrame()
     for field in fields:
         if selected_category == 'Loan_Type':
-            masked_field = df[(df[first_occupation] == 1) | (df[second_occupation] == 1)][field]
+            masked_df = df[(df[first_occupation] == 1) | (df[second_occupation] == 1)]
+            masked_field = masked_df[field]
         else:
-            masked_field = df[df[selected_category].isin(selected_values)][field]
+            masked_df = df[df[selected_category].isin(selected_values)]
+            masked_field = masked_df[field]
         dimensions.append(
             dict(range=[masked_field.min(), masked_field.max()], label=field.replace("_", " "),
                  values=masked_field))
 
     if selected_category == 'Loan_Type':
+        category_codes = masked_df[first_occupation].astype('category').cat.codes
         pcp_plot = go.Figure(data=
         go.Parcoords(
-            line=dict(color=df[first_occupation].astype('category').cat.codes,
+            line=dict(color=category_codes,
                       showscale=True),
             dimensions=dimensions,
         ))
+        pcp_label = ''
+        for value, code in zip(masked_df[first_occupation].unique(), category_codes):
+            if pcp_label != '':
+                pcp_label = pcp_label + f", {code}: {selected_values[value]}"
+            else:
+                pcp_label = f"{code}: {selected_values[value]}"
     else:
+        category_codes = pd.Categorical(masked_df[selected_category], categories=masked_df[selected_category].unique()).codes
         pcp_plot = go.Figure(
-        go.Parcoords(
-            line=dict(color=df[selected_category].astype('category').cat.codes,
-                      showscale=True),
-            dimensions=dimensions,
+            go.Parcoords(
+                line=dict(color=category_codes,
+                          showscale=True),
+                dimensions=dimensions,
+            ))
+        pcp_label = ''
+        for value, code in zip(masked_df[selected_category].unique(), category_codes):
+            if pcp_label != '':
+                pcp_label = pcp_label + f", {code}: {value}"
+            else:
+                pcp_label = f"{code}: {value}"
 
-        ))
-
-    scatterpolar_middle.update_layout(
-        autosize=True
-    )
-    pcp_plot.update_layout(
-        autosize=True
-    )
-
-    return scatterpolar_middle, pcp_plot
+    return scatterpolar_middle, pcp_plot, pcp_label
 
 
 if __name__ == '__main__':
