@@ -83,7 +83,7 @@ app.layout = html.Div([
                         id='left-side-select-x-dropdown',
                         options=[{'label': field, 'value': field} for field in fields],
                         value=fields[0],
-                        style={'width': '230px'}
+                        style={'width': '180px'}
                     )
                 ], style={'marginRight': '20px'}),
                 # Select y
@@ -93,7 +93,7 @@ app.layout = html.Div([
                         id='left-side-select-y-dropdown',
                         options=[{'label': field, 'value': field} for field in fields],
                         value=fields[1],
-                        style={'width': '230px'}
+                        style={'width': '180px'}
                     )
                 ]),
             ], style={'display': 'flex', 'flexDirection': 'row',
@@ -165,7 +165,7 @@ app.layout = html.Div([
                     id='category-dropdown',
                     options=category_options,
                     value='Occupation',
-                    style={'width': '300px'}
+                    style={'width': '200px'}
                 ),
             ], style={'display': 'flex', 'flexDirection': 'column',
                       'alignItems': 'center', 'justifyContent': 'center'}),
@@ -178,15 +178,14 @@ app.layout = html.Div([
                         id='first-occupation-dropdown',
                         options=occupation_options,
                         multi=False,
-                        style={'width': '200px'}
-                        # value=occupation_options[0]['value']
+                        style={'width': '180px'}
                     ),
                     dcc.Checklist(
                         id='left-side-checklist',
                         options=[
                             {'label': 'In-depth Left Side', 'value': 'left'},
                         ])
-                ], style={'marginRight': '20px'}),
+                ], style={'marginRight': '10px'}),
                 # Second demographic
                 html.Div([
                     html.Label('Select Right-side Demographic', style={'color': '#F79500'}),
@@ -234,7 +233,7 @@ app.layout = html.Div([
                         id='right-side-select-x-dropdown',
                         options=[{'label': field, 'value': field} for field in fields],
                         value=fields[0],
-                        style={'width': '230px'}
+                        style={'width': '180px'}
                     )
                 ], style={'marginRight': '20px'}),
                 # Select y
@@ -244,7 +243,7 @@ app.layout = html.Div([
                         id='right-side-select-y-dropdown',
                         options=[{'label': field, 'value': field} for field in fields],
                         value=fields[1],
-                        style={'width': '230px'}
+                        style={'width': '180px'}
                     )
                 ]),
             ], style={'display': 'flex', 'flexDirection': 'row',
