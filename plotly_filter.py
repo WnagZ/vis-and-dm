@@ -487,7 +487,7 @@ def update_bar_chart_left(main_category, selected_category, selected_label, seco
 
     layout = go.Layout(
         title=dict(
-            text=f'{left_occupation}s\' {selected_field} by {unchosen_category}',
+            text=f'{left_occupation}s\' {selected_field.replace("_", " ")} by {unchosen_category.replace("_", " ")}',
             font=dict(color='#0474BA')
         ),
         xaxis={'title': f'Mean {selected_field}'}
@@ -564,7 +564,7 @@ def update_bar_chart_right(main_category, selected_category, selected_label, sec
 
     layout = go.Layout(
         title=dict(
-            text=f'{right_occupation}s\' {selected_field} by {unchosen_category}',
+            text=f'{right_occupation}s\' {selected_field.replace("_", " ")} by {unchosen_category.replace("_", " ")}',
             font=dict(color='#F79500')
         ),
         xaxis={'title': f'Mean {selected_field}'},
@@ -651,7 +651,7 @@ def update_scatterpolar_left(main_category, selected_category, selected_label, s
 
     layout = go.Layout(
         title=dict(
-            text=f'{main_category}s by {selected_field}',
+            text=f'{main_category}s by {selected_field.replace("_", " ")}',
             font=dict(color='black')
         ),
         polar=dict(radialaxis=dict(visible=True)),
@@ -727,7 +727,7 @@ def update_scatterpolar_right(main_category, selected_category, selected_label, 
 
     layout = go.Layout(
         title=dict(
-            text=f'{main_category}s by {selected_field}',
+            text=f'{main_category}s by {selected_field.replace("_", " ")}',
             font=dict(color='black')
         ),
         polar=dict(radialaxis=dict(visible=True)),
