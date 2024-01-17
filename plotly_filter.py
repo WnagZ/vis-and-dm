@@ -769,7 +769,11 @@ def update_output(first_occupation, second_occupation, selected_category):
         # Define color for the trace
         trace_color = '#0474BA' if i == 0 else '#F79500'
 
-        meanlist = ["Mean " + x for x in fields]
+        # Remove underscores from each string in fields
+        fields_without_underscore = [x.replace('_', ' ') for x in fields]
+
+        # Create meanlist with modified strings
+        meanlist = ["Mean " + x for x in fields_without_underscore]
 
         scatterpolar_middle.add_trace(go.Scatterpolar(
             r=mean_table,
