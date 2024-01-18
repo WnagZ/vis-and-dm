@@ -609,151 +609,151 @@ def update_occupation_names(first_occupation, second_occupation):
 
 
 # Callback to update the scatterpolar graph for the left side
-@app.callback(
-    Output('scatterpolar-left', 'figure'),
-    [Input('category-dropdown', 'value'),
-     Input('left-side-category-dropdown', 'value'),
-     Input('left-side-label-dropdown', 'value'),
-     Input('left-side-second-category-dropdown', 'value'),
-     Input('left-side-second-label-dropdown', 'value'),
-     Input('left-side-field-dropdown', 'value'),
-     Input('first-occupation-dropdown', 'value')]
-)
-def update_scatterpolar_left(main_category, selected_category, selected_label, second_category, second_label,
-                             selected_field, first_occupation):
-    if any(item is None for item in
-           [main_category, selected_category, selected_label, second_category, second_label,
-            selected_field]):
-        return go.Figure()
-
-    # Get unique labels for the main category selected in the middle
-    if main_category == 'Loan_Type':
-        main_category_labels = loan_types
-    else:
-        main_category_labels = df[main_category].unique()
-
-    # Filter the database based on left-side category labels and second category labels
-    if selected_category == 'Loan_Type':
-        filtered_data = df[df[selected_label] == 1]
-    else:
-        filtered_data = df[df[selected_category] == selected_label]
-
-    if second_category == 'Loan_Type':
-        filtered_data = filtered_data[filtered_data[second_label] == 1]
-    else:
-        filtered_data = filtered_data[filtered_data[second_category] == second_label]
-
-    # Create traces for the selected field
-    values = []
-    for label in main_category_labels:
-        if main_category == 'Loan_Type':
-            label_data = filtered_data[filtered_data[label] == 1]
-        else:
-            label_data = filtered_data[filtered_data[main_category] == label]
-        mean_value = label_data[selected_field].mean()
-        if not math.isnan(mean_value):
-            values.append(math.log(round(mean_value)))
-        else:
-            values.append(None)
-
-    colors = ['#0474BA' if label == first_occupation else 'black' for label in main_category_labels]
-
-    # Pad 'r' values with None to match the length of 'theta' values
-    while len(values) < len(main_category_labels):
-        values.append(None)
-
-    trace = go.Scatterpolar(
-        r=values,
-        theta=main_category_labels,
-        name=selected_field,
-        line=dict(color='black'),
-        marker=dict(
-            color=colors
-        ),
-    )
-
-    layout = go.Layout(
-        title=dict(
-            text=f'{main_category}s by {selected_field.replace("_", " ")}',
-            font=dict(color='black')
-        ),
-        polar=dict(radialaxis=dict(visible=True)),
-        showlegend=True)
-
-    return go.Figure(data=[trace], layout=layout)
-
-
-# Callback to update the scatterpolar graph for the right side
-@app.callback(
-    Output('scatterpolar-right', 'figure'),
-    [Input('category-dropdown', 'value'),
-     Input('right-side-category-dropdown', 'value'),
-     Input('right-side-label-dropdown', 'value'),
-     Input('right-side-second-category-dropdown', 'value'),
-     Input('right-side-second-label-dropdown', 'value'),
-     Input('right-side-field-dropdown', 'value'),
-     Input('second-occupation-dropdown', 'value')]
-)
-def update_scatterpolar_right(main_category, selected_category, selected_label, second_category, second_label,
-                              selected_field, second_occupation):
-    if any(item is None for item in
-           [main_category, selected_category, selected_label, second_category, second_label,
-            selected_field]):
-        return go.Figure()
-    # Get unique labels for the main category selected in the middle
-    if main_category == 'Loan_Type':
-        main_category_labels = loan_types
-    else:
-        main_category_labels = df[main_category].unique()
-
-    # Filter the database based on left-side category labels and second category labels
-    if selected_category == 'Loan_Type':
-        filtered_data = df[df[selected_label] == 1]
-    else:
-        filtered_data = df[df[selected_category] == selected_label]
-
-    if second_category == 'Loan_Type':
-        filtered_data = filtered_data[filtered_data[second_label] == 1]
-    else:
-        filtered_data = filtered_data[filtered_data[second_category] == second_label]
-
-    # Create traces for the selected field
-    values = []
-    for label in main_category_labels:
-        if main_category == 'Loan_Type':
-            label_data = filtered_data[filtered_data[label] == 1]
-        else:
-            label_data = filtered_data[filtered_data[main_category] == label]
-        mean_value = label_data[selected_field].mean()
-        if not math.isnan(mean_value):
-            values.append(math.log(round(mean_value)))
-        else:
-            values.append(None)
-
-    colors = ['#F79500' if label == second_occupation else 'black' for label in main_category_labels]
-
-    # Pad 'r' values with None to match the length of 'theta' values
-    while len(values) < len(main_category_labels):
-        values.append(None)
-
-    trace = go.Scatterpolar(
-        r=values,
-        theta=main_category_labels,
-        name=selected_field,
-        line=dict(color='black'),
-        marker=dict(
-            color=colors
-        ),
-    )
-
-    layout = go.Layout(
-        title=dict(
-            text=f'{main_category}s by {selected_field.replace("_", " ")}',
-            font=dict(color='black')
-        ),
-        polar=dict(radialaxis=dict(visible=True)),
-        showlegend=True)
-    return go.Figure(data=[trace], layout=layout)
+# @app.callback(
+#     Output('scatterpolar-left', 'figure'),
+#     [Input('category-dropdown', 'value'),
+#      Input('left-side-category-dropdown', 'value'),
+#      Input('left-side-label-dropdown', 'value'),
+#      Input('left-side-second-category-dropdown', 'value'),
+#      Input('left-side-second-label-dropdown', 'value'),
+#      Input('left-side-field-dropdown', 'value'),
+#      Input('first-occupation-dropdown', 'value')]
+# )
+# def update_scatterpolar_left(main_category, selected_category, selected_label, second_category, second_label,
+#                              selected_field, first_occupation):
+#     if any(item is None for item in
+#            [main_category, selected_category, selected_label, second_category, second_label,
+#             selected_field]):
+#         return go.Figure()
+#
+#     # Get unique labels for the main category selected in the middle
+#     if main_category == 'Loan_Type':
+#         main_category_labels = loan_types
+#     else:
+#         main_category_labels = df[main_category].unique()
+#
+#     # Filter the database based on left-side category labels and second category labels
+#     if selected_category == 'Loan_Type':
+#         filtered_data = df[df[selected_label] == 1]
+#     else:
+#         filtered_data = df[df[selected_category] == selected_label]
+#
+#     if second_category == 'Loan_Type':
+#         filtered_data = filtered_data[filtered_data[second_label] == 1]
+#     else:
+#         filtered_data = filtered_data[filtered_data[second_category] == second_label]
+#
+#     # Create traces for the selected field
+#     values = []
+#     for label in main_category_labels:
+#         if main_category == 'Loan_Type':
+#             label_data = filtered_data[filtered_data[label] == 1]
+#         else:
+#             label_data = filtered_data[filtered_data[main_category] == label]
+#         mean_value = label_data[selected_field].mean()
+#         if not math.isnan(mean_value):
+#             values.append(math.log(round(mean_value)))
+#         else:
+#             values.append(None)
+#
+#     colors = ['#0474BA' if label == first_occupation else 'black' for label in main_category_labels]
+#
+#     # Pad 'r' values with None to match the length of 'theta' values
+#     while len(values) < len(main_category_labels):
+#         values.append(None)
+#
+#     trace = go.Scatterpolar(
+#         r=values,
+#         theta=main_category_labels,
+#         name=selected_field,
+#         line=dict(color='black'),
+#         marker=dict(
+#             color=colors
+#         ),
+#     )
+#
+#     layout = go.Layout(
+#         title=dict(
+#             text=f'{main_category}s by {selected_field.replace("_", " ")}',
+#             font=dict(color='black')
+#         ),
+#         polar=dict(radialaxis=dict(visible=True)),
+#         showlegend=True)
+#
+#     return go.Figure(data=[trace], layout=layout)
+#
+#
+# # Callback to update the scatterpolar graph for the right side
+# @app.callback(
+#     Output('scatterpolar-right', 'figure'),
+#     [Input('category-dropdown', 'value'),
+#      Input('right-side-category-dropdown', 'value'),
+#      Input('right-side-label-dropdown', 'value'),
+#      Input('right-side-second-category-dropdown', 'value'),
+#      Input('right-side-second-label-dropdown', 'value'),
+#      Input('right-side-field-dropdown', 'value'),
+#      Input('second-occupation-dropdown', 'value')]
+# )
+# def update_scatterpolar_right(main_category, selected_category, selected_label, second_category, second_label,
+#                               selected_field, second_occupation):
+#     if any(item is None for item in
+#            [main_category, selected_category, selected_label, second_category, second_label,
+#             selected_field]):
+#         return go.Figure()
+#     # Get unique labels for the main category selected in the middle
+#     if main_category == 'Loan_Type':
+#         main_category_labels = loan_types
+#     else:
+#         main_category_labels = df[main_category].unique()
+#
+#     # Filter the database based on left-side category labels and second category labels
+#     if selected_category == 'Loan_Type':
+#         filtered_data = df[df[selected_label] == 1]
+#     else:
+#         filtered_data = df[df[selected_category] == selected_label]
+#
+#     if second_category == 'Loan_Type':
+#         filtered_data = filtered_data[filtered_data[second_label] == 1]
+#     else:
+#         filtered_data = filtered_data[filtered_data[second_category] == second_label]
+#
+#     # Create traces for the selected field
+#     values = []
+#     for label in main_category_labels:
+#         if main_category == 'Loan_Type':
+#             label_data = filtered_data[filtered_data[label] == 1]
+#         else:
+#             label_data = filtered_data[filtered_data[main_category] == label]
+#         mean_value = label_data[selected_field].mean()
+#         if not math.isnan(mean_value):
+#             values.append(math.log(round(mean_value)))
+#         else:
+#             values.append(None)
+#
+#     colors = ['#F79500' if label == second_occupation else 'black' for label in main_category_labels]
+#
+#     # Pad 'r' values with None to match the length of 'theta' values
+#     while len(values) < len(main_category_labels):
+#         values.append(None)
+#
+#     trace = go.Scatterpolar(
+#         r=values,
+#         theta=main_category_labels,
+#         name=selected_field,
+#         line=dict(color='black'),
+#         marker=dict(
+#             color=colors
+#         ),
+#     )
+#
+#     layout = go.Layout(
+#         title=dict(
+#             text=f'{main_category}s by {selected_field.replace("_", " ")}',
+#             font=dict(color='black')
+#         ),
+#         polar=dict(radialaxis=dict(visible=True)),
+#         showlegend=True)
+#     return go.Figure(data=[trace], layout=layout)
 
 
 # Callback to update the output div based on the selected occupations
