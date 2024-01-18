@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from dash import dcc, html
 from dash.dependencies import Input, Output
+import plotly.express as px
 
 app = dash.Dash(__name__)
 df = pd.read_csv('filled_data.csv')
@@ -98,6 +99,8 @@ app.layout = html.Div([
                 ]),
             ], style={'display': 'flex', 'flexDirection': 'row',
                       'alignItems': 'center', 'justifyContent': 'center'}),
+
+            # Scatterplot
             dcc.Graph(id='left-side-scatterplot',
                       responsive=True),
 
@@ -113,42 +116,6 @@ app.layout = html.Div([
                       'alignItems': 'center', 'justifyContent': 'center'}),
 
 
-            # Four dropdowns for the left side
-            html.Label('Select Left-side Category', style={'color': '#0474BA'}),
-            dcc.Dropdown(
-                id='left-side-category-dropdown',
-                # options=category_options,
-                # value=category_options[1]['value'],
-            ),
-
-            html.Label('Select Left-side Demographic', style={'color': '#0474BA'}),
-            dcc.Dropdown(
-                id='left-side-label-dropdown'
-                # value=df[category_options[1]['value']].unique().tolist()[0]
-            ),
-
-            html.Label('Select Left-side Second Category', style={'color': '#0474BA'}),
-            dcc.Dropdown(
-                id='left-side-second-category-dropdown',
-                # options=category_options,
-                # value=category_options[2]['value']
-            ),
-
-            html.Label('Select Left-side Second Label', style={'color': '#0474BA'}),
-            dcc.Dropdown(
-                id='left-side-second-label-dropdown'
-                # value=df[category_options[2]['value']].unique().tolist()[0]
-            ),
-
-            html.Label('Select Left-side Categories to Compare', style={'color': '#0474BA'}),
-            dcc.Dropdown(
-                id='left-side-field-dropdown',
-                options=[{'label': field, 'value': field} for field in fields],
-                value=fields[0]
-            ),
-
-            # Bar chart for left side
-            dcc.Graph(id='bar-chart-left'),
 
             # Scatterpolar graph for left side
             dcc.Graph(id='scatterpolar-left'),
@@ -248,6 +215,8 @@ app.layout = html.Div([
                 ]),
             ], style={'display': 'flex', 'flexDirection': 'row',
                       'alignItems': 'center', 'justifyContent': 'center'}),
+
+            # Scatterplot
             dcc.Graph(id='right-side-scatterplot',
                       responsive=True),
 
@@ -261,47 +230,6 @@ app.layout = html.Div([
                           style={'width': '250px', 'height': '250px'})
             ], style={'display': 'flex', 'flexDirection': 'row',
                       'alignItems': 'center', 'justifyContent': 'center'}),
-
-            # Four dropdowns for the right side
-            html.Label('Select Right-side Category', style={'color': '#F79500'}),
-            dcc.Dropdown(
-                id='right-side-category-dropdown',
-                # options=category_options,
-                # value=category_options[1]['value']
-            ),
-
-            html.Label('Select Right-side Demographic', style={'color': '#F79500'}),
-            dcc.Dropdown(
-                id='right-side-label-dropdown',
-                options=occupation_options,
-                multi=False,
-                # value=occupation_options[0]['value']
-            ),
-
-            html.Label('Select Right-side Second Category', style={'color': '#F79500'}),
-            dcc.Dropdown(
-                id='right-side-second-category-dropdown',
-                # options=category_options,
-                # value=category_options[2]['value']
-            ),
-
-            html.Label('Select Right-side Second Label', style={'color': '#F79500'}),
-            dcc.Dropdown(
-                id='right-side-second-label-dropdown',
-                options=occupation_options,
-                multi=False,
-                # value=occupation_options[0]['value']
-            ),
-
-            html.Label('Select Right-side Categories to Compare', style={'color': '#F79500'}),
-            dcc.Dropdown(
-                id='right-side-field-dropdown',
-                options=[{'label': field, 'value': field} for field in fields],
-                value=fields[0]
-            ),
-
-            # Bar chart for right side
-            dcc.Graph(id='bar-chart-right'),
 
             # Scatterpolar graph for right side
             dcc.Graph(id='scatterpolar-right'),
@@ -389,95 +317,6 @@ def update_second_occupation_dropdown_options(selected_category):
     return options, values
 
 
-@app.callback(
-    [Output('left-side-category-dropdown', 'options'),
-     Output('left-side-category-dropdown', 'value')],
-    [Input('category-dropdown', 'value')]
-)
-def update_left_side_category_dropdown_options(selected_category):
-    return get_options_and_defaults_side_first_category(selected_category)
-
-
-@app.callback(
-    [Output('left-side-second-category-dropdown', 'options'),
-     Output('left-side-second-category-dropdown', 'value')],
-    [Input('left-side-category-dropdown', 'value'),
-     Input('left-side-category-dropdown', 'options')]
-)
-def update_left_side_category_second_dropdown_options(selected_category, options):
-    return get_options_and_defaults_second_category(selected_category, options)
-
-
-# Callback to dynamically update the options of the left side label dropdown
-@app.callback(
-    [Output('left-side-label-dropdown', 'options'),
-     Output('left-side-label-dropdown', 'value')],
-    [Input('left-side-category-dropdown', 'value')]
-)
-def update_left_side_label_dropdown_options(selected_category):
-    return get_options_and_defaults(selected_category)
-
-
-@app.callback(
-    [Output('left-side-second-label-dropdown', 'options'),
-     Output('left-side-second-label-dropdown', 'value')],
-    [Input('left-side-second-category-dropdown', 'value')]
-)
-def update_left_side_second_label_dropdown_options(selected_category):
-    return get_options_and_defaults(selected_category)
-
-
-@app.callback(
-    [Output('right-side-category-dropdown', 'options'),
-     Output('right-side-category-dropdown', 'value')],
-    [Input('category-dropdown', 'value')]
-)
-def update_right_side_category_dropdown_options(selected_category):
-    return get_options_and_defaults_side_first_category(selected_category)
-
-
-@app.callback(
-    [Output('right-side-second-category-dropdown', 'options'),
-     Output('right-side-second-category-dropdown', 'value')],
-    [Input('right-side-category-dropdown', 'value'),
-     Input('right-side-category-dropdown', 'options')]
-)
-def update_right_side_category_second_dropdown_options(selected_category, options):
-    return get_options_and_defaults_second_category(selected_category, options)
-
-
-# Callback to dynamically update the options of the right side label dropdown
-@app.callback(
-    [Output('right-side-label-dropdown', 'options'),
-     Output('right-side-label-dropdown', 'value')],
-    [Input('right-side-category-dropdown', 'value')]
-)
-def update_right_side_label_dropdown_options(selected_category):
-    return get_options_and_defaults(selected_category)
-
-
-@app.callback(
-    [Output('right-side-second-label-dropdown', 'options'),
-     Output('right-side-second-label-dropdown', 'value')],
-    [Input('right-side-second-category-dropdown', 'value')]
-)
-def update_right_side_second_label_dropdown_options(selected_category):
-    return get_options_and_defaults(selected_category)
-
-
-def get_options_and_defaults_side_first_category(selected_category):
-    constrained_options = category_options.copy()
-    if selected_category == 'Occupation':
-        constrained_options.pop(0)
-    elif selected_category == 'Grouped_Age':
-        constrained_options.pop(1)
-    elif selected_category == 'Grouped_Annual_Income':
-        constrained_options.pop(2)
-    else:
-        constrained_options.pop(3)
-    return constrained_options, constrained_options[0]['value']
-
-
 def get_options_and_defaults_second_category(selected_category, options):
     if options is None:
         return [], ''
@@ -517,159 +356,245 @@ def get_options_based_on_category(selected_category):
 
 all_categories = ['Occupation', 'Grouped_Age', 'Grouped_Annual_Income', 'Loan_Type']
 
-
-# Callback to update the bar chart for the left side
+# Callback to update the scatterplot for the left side
 @app.callback(
-    Output('bar-chart-left', 'figure'),
-    [Input('category-dropdown', 'value'),
-     Input('left-side-category-dropdown', 'value'),
-     Input('left-side-label-dropdown', 'value'),
-     Input('left-side-second-category-dropdown', 'value'),
-     Input('left-side-second-label-dropdown', 'value'),
-     Input('left-side-field-dropdown', 'value'),
+    Output('left-side-scatterplot', 'figure'),
+    [Input('left-side-select-x-dropdown', 'value'),
+     Input('left-side-select-y-dropdown', 'value'),
+     Input('category-dropdown', 'value'),
      Input('first-occupation-dropdown', 'value')]
 )
-def update_bar_chart_left(main_category, selected_category, selected_label, second_category, second_label,
-                          selected_field, left_occupation):
-    if any(item is None for item in
-           [main_category, selected_category, selected_label, second_category, second_label,
-            selected_field]):
-        return go.Figure()
-
-    unchosen_category = [category for category in all_categories if
-                         category not in [selected_category, second_category, main_category]][0]
-    # Get unique labels for the unchosen category
-    if unchosen_category == 'Loan_Type':
-        main_category_labels = loan_types
+def update_scatterplot_left(x_value, y_value, category, left_occupation):
+    # Filter database based on chosen demographic
+    if category == 'Loan_Type':
+        filtered_df = df[df[left_occupation] == 1]
     else:
-        main_category_labels = df[unchosen_category].unique()
+        filtered_df = df[df[category] == left_occupation]
 
-    # Filter the database based on left-side category labels and second category labels
-    if selected_category == 'Loan_Type':
-        filtered_data = df[df[selected_label] == 1]
-    else:
-        filtered_data = df[df[selected_category] == selected_label]
+    # Define the color and marker mapping
+    color_mapping = {'0-10000': '#b0d767', '10000-20000': '#da8ec0', '30000-50000': '#f9da56', '50000-70000': '#e0c59a',
+                     '70000+': '#b3b3b3'}
+    marker_mapping = {'0-20': 'circle', '20-35': 'cross', '35-50': 'diamond', '50-75': 'star'}
 
-    if second_category == 'Loan_Type':
-        filtered_data = filtered_data[filtered_data[second_label] == 1]
-    else:
-        filtered_data = filtered_data[filtered_data[second_category] == second_label]
+    # Create a Plotly figure
+    fig = go.Figure()
 
-    if main_category == 'Loan_Type':
-        filtered_data = filtered_data[filtered_data[left_occupation] == 1]
-    else:
-        filtered_data = filtered_data[filtered_data[main_category] == left_occupation]
+    # Iterate through unique combinations of age and income groups
+    for income_Group in color_mapping:
+        for age_Group in marker_mapping:
+            subset_df = filtered_df[
+                (filtered_df['Grouped_Annual_Income'] == income_Group) & (filtered_df['Grouped_Age'] == age_Group)]
 
-    # Create traces for the selected field
-    values = []
-    for label in main_category_labels:
-        if unchosen_category == 'Loan_Type':
-            label_data = filtered_data[filtered_data[label] == 1]
-        else:
-            label_data = filtered_data[filtered_data[unchosen_category] == label]
-        mean_value = label_data[selected_field].mean()
-        if not math.isnan(mean_value):
-            values.append(math.log(round(mean_value)))
-        else:
-            values.append(None)
-
-    # Pad 'r' values with None to match the length of 'theta' values
-    while len(values) < len(main_category_labels):
-        values.append(None)
-
-    trace = go.Bar(
-        y=main_category_labels,
-        x=values,
-        name=selected_field,
-        marker=dict(color='#0474BA'),
-        orientation='h'
-    )
-
-    layout = go.Layout(
-        title=dict(
-            text=f'{left_occupation}s\' {selected_field.replace("_", " ")} by {unchosen_category.replace("_", " ")}',
-            font=dict(color='#0474BA')
-        ),
-        xaxis={'title': f'Mean {selected_field.replace("_", " ")}'}
-    )
-    return go.Figure(data=[trace], layout=layout)
+            fig.add_trace(go.Scatter(
+                x=subset_df[x_value],
+                y=subset_df[y_value],
+                mode="markers",
+                marker=dict(color=color_mapping[income_Group], symbol=marker_mapping[age_Group], size=10),
+                name=f"{income_Group} - {age_Group}"
+            ))
 
 
-# Similar callback for updating the bar chart for the right side
+    # Update layout
+    fig.update_layout(title='Scatter Plot',
+                      xaxis_title=x_value,
+                      yaxis_title=y_value,
+                      legend_title='Income - Age',
+                      legend_title_font=dict(size=14))
+
+    return fig
+
+
+# Callback to update the first barplot for the left side
 @app.callback(
-    Output('bar-chart-right', 'figure'),
+    Output('left-side-first-barplot', 'figure'),
     [Input('category-dropdown', 'value'),
-     Input('right-side-category-dropdown', 'value'),
-     Input('right-side-label-dropdown', 'value'),
-     Input('right-side-second-category-dropdown', 'value'),
-     Input('right-side-second-label-dropdown', 'value'),
-     Input('right-side-field-dropdown', 'value'),
+     Input('first-occupation-dropdown', 'value')]
+)
+def update_left_side_first_barplot(category, left_occupation):
+    # Filter database based on chosen demographic
+    if category == 'Loan_Type':
+        filtered_df = df[df[left_occupation] == 1]
+    else:
+        filtered_df = df[df[category] == left_occupation]
+
+        # Define the color mapping
+        color_mapping = {'0-10000': '#b0d767', '10000-20000': '#da8ec0', '30000-50000': '#f9da56',
+                         '50000-70000': '#e0c59a', '70000+': '#b3b3b3'}
+
+        # Create histogram
+        fig = px.histogram(filtered_df, x='Grouped_Annual_Income', color='Grouped_Annual_Income',
+                           color_discrete_map=color_mapping,
+                           category_orders={
+                               'Grouped_Annual_Income': ['0-10000', '10000-20000', '30000-50000', '50000-70000',
+                                                         '70000+']},
+                           labels={'Grouped_Annual_Income': 'Income Group', 'count': 'Frequency'})
+
+        # Update layout
+        fig.update_layout(title='Income Groups Frequency',
+                          xaxis_title='Income Group',
+                          yaxis_title='Frequency',
+                          showlegend=False)
+
+        return fig
+
+
+
+# Callback to update the first barplot for the left side
+@app.callback(
+    Output('left-side-second-barplot', 'figure'),
+    [Input('category-dropdown', 'value'),
+     Input('first-occupation-dropdown', 'value')]
+)
+def update_left_side_second_barplot(category, left_occupation):
+    # Filter database based on chosen demographic
+    if category == 'Loan_Type':
+        filtered_df = df[df[left_occupation] == 1]
+    else:
+        filtered_df = df[df[category] == left_occupation]
+
+    # Calculate frequency of each age group
+    age_group_freq = filtered_df['Grouped_Age'].value_counts().reset_index()
+    age_group_freq.columns = ['Grouped_Age', 'Frequency']
+
+    # Create scatter plot
+    fig = px.scatter(age_group_freq, x='Grouped_Age', y='Frequency',
+                     size_max=15,
+                     symbol='Grouped_Age',
+                     symbol_sequence=['circle', 'cross', 'diamond', 'star'],
+                     labels={'Grouped_Age': 'Age Group', 'Frequency': 'Frequency'},
+                     category_orders={'Grouped_Age': ['0-20', '20-35', '35-50', '50-75']})
+
+    # Set the color of all markers to black
+    fig.update_traces(marker=dict(color='black'))
+
+    # Update layout
+    fig.update_layout(title='Age Groups Frequency',
+                      xaxis_title='Age Group',
+                      yaxis_title='Frequency',
+                      showlegend=False)
+
+    return fig
+
+
+# Callback to update the scatterplot for the left side
+@app.callback(
+    Output('right-side-scatterplot', 'figure'),
+    [Input('right-side-select-x-dropdown', 'value'),
+     Input('right-side-select-y-dropdown', 'value'),
+     Input('category-dropdown', 'value'),
      Input('second-occupation-dropdown', 'value')]
 )
-def update_bar_chart_right(main_category, selected_category, selected_label, second_category, second_label,
-                           selected_field, right_occupation):
-    if any(item is None for item in
-           [main_category, selected_category, selected_label, second_category, second_label,
-            selected_field]):
-        return go.Figure()
-    unchosen_category = [category for category in all_categories if
-                         category not in [selected_category, second_category, main_category]][0]
-    # Get unique labels for the unchosen category selected
-    if unchosen_category == 'Loan_Type':
-        main_category_labels = loan_types
+def update_scatterplot_left(x_value, y_value, category, right_occupation):
+    # Filter database based on chosen demographic
+    if category == 'Loan_Type':
+        filtered_df = df[df[right_occupation] == 1]
     else:
-        main_category_labels = df[unchosen_category].unique()
+        filtered_df = df[df[category] == right_occupation]
 
-    # Filter the database based on left-side category labels and second category labels
-    if selected_category == 'Loan_Type':
-        filtered_data = df[df[selected_label] == 1]
+    # Define the color and marker mapping
+    color_mapping = {'0-10000': '#b0d767', '10000-20000': '#da8ec0', '30000-50000': '#f9da56', '50000-70000': '#e0c59a',
+                     '70000+': '#b3b3b3'}
+    marker_mapping = {'0-20': 'circle', '20-35': 'cross', '35-50': 'diamond', '50-75': 'star'}
+
+    # Create a Plotly figure
+    fig = go.Figure()
+
+    # Iterate through unique combinations of age and income groups
+    for income_Group in color_mapping:
+        for age_Group in marker_mapping:
+            subset_df = filtered_df[
+                (filtered_df['Grouped_Annual_Income'] == income_Group) & (filtered_df['Grouped_Age'] == age_Group)]
+
+            fig.add_trace(go.Scatter(
+                x=subset_df[x_value],
+                y=subset_df[y_value],
+                mode="markers",
+                marker=dict(color=color_mapping[income_Group], symbol=marker_mapping[age_Group], size=10),
+                name=f"{income_Group} - {age_Group}"
+            ))
+
+
+    # Update layout
+    fig.update_layout(title='Scatter Plot',
+                      xaxis_title=x_value,
+                      yaxis_title=y_value,
+                      legend_title='Income - Age',
+                      legend_title_font=dict(size=14))
+
+    return fig
+
+
+# Callback to update the first barplot for the right side
+@app.callback(
+    Output('right-side-first-barplot', 'figure'),
+    [Input('category-dropdown', 'value'),
+     Input('second-occupation-dropdown', 'value')]
+)
+def update_left_side_first_barplot(category, right_occupation):
+    # Filter database based on chosen demographic
+    if category == 'Loan_Type':
+        filtered_df = df[df[right_occupation] == 1]
     else:
-        filtered_data = df[df[selected_category] == selected_label]
+        filtered_df = df[df[category] == right_occupation]
 
-    if second_category == 'Loan_Type':
-        filtered_data = filtered_data[filtered_data[second_label] == 1]
+        # Define the color mapping
+        color_mapping = {'0-10000': '#b0d767', '10000-20000': '#da8ec0', '30000-50000': '#f9da56',
+                         '50000-70000': '#e0c59a', '70000+': '#b3b3b3'}
+
+        # Create histogram
+        fig = px.histogram(filtered_df, x='Grouped_Annual_Income', color='Grouped_Annual_Income',
+                           color_discrete_map=color_mapping,
+                           category_orders={
+                               'Grouped_Annual_Income': ['0-10000', '10000-20000', '30000-50000', '50000-70000',
+                                                         '70000+']},
+                           labels={'Grouped_Annual_Income': 'Income Group', 'count': 'Frequency'})
+
+        # Update layout
+        fig.update_layout(title='Income Groups Frequency',
+                          xaxis_title='Income Group',
+                          yaxis_title='Frequency',
+                          showlegend=False)
+
+        return fig
+
+
+
+# Callback to update the first barplot for the right side
+@app.callback(
+    Output('right-side-second-barplot', 'figure'),
+    [Input('category-dropdown', 'value'),
+     Input('second-occupation-dropdown', 'value')]
+)
+def update_left_side_second_barplot(category, right_occupation):
+    # Filter database based on chosen demographic
+    if category == 'Loan_Type':
+        filtered_df = df[df[right_occupation] == 1]
     else:
-        filtered_data = filtered_data[filtered_data[second_category] == second_label]
+        filtered_df = df[df[category] == right_occupation]
 
-    if main_category == 'Loan_Type':
-        filtered_data = filtered_data[filtered_data[right_occupation] == 1]
-    else:
-        filtered_data = filtered_data[filtered_data[main_category] == right_occupation]
+    # Calculate frequency of each age group
+    age_group_freq = filtered_df['Grouped_Age'].value_counts().reset_index()
+    age_group_freq.columns = ['Grouped_Age', 'Frequency']
 
-    # Create traces for the selected field
-    values = []
-    for label in main_category_labels:
-        if unchosen_category == 'Loan_Type':
-            label_data = filtered_data[filtered_data[label] == 1]
-        else:
-            label_data = filtered_data[filtered_data[unchosen_category] == label]
-        mean_value = label_data[selected_field].mean()
-        if not math.isnan(mean_value):
-            values.append(math.log(round(mean_value)))
-        else:
-            values.append(None)
+    # Create scatter plot
+    fig = px.scatter(age_group_freq, x='Grouped_Age', y='Frequency',
+                     size_max=15,
+                     symbol='Grouped_Age',
+                     symbol_sequence=['circle', 'cross', 'diamond', 'star'],
+                     labels={'Grouped_Age': 'Age Group', 'Frequency': 'Frequency'},
+                     category_orders={'Grouped_Age': ['0-20', '20-35', '35-50', '50-75']})
 
-    # Pad 'r' values with None to match the length of 'theta' values
-    while len(values) < len(main_category_labels):
-        values.append(None)
+    # Set the color of all markers to black
+    fig.update_traces(marker=dict(color='black'))
 
-    trace = go.Bar(
-        y=main_category_labels,
-        x=values,
-        name=selected_field,
-        marker=dict(color='#F79500'),
-        orientation='h'
-    )
+    # Update layout
+    fig.update_layout(title='Age Groups Frequency',
+                      xaxis_title='Age Group',
+                      yaxis_title='Frequency',
+                      showlegend=False)
 
-    layout = go.Layout(
-        title=dict(
-            text=f'{right_occupation}s\' {selected_field.replace("_", " ")} by {unchosen_category.replace("_", " ")}',
-            font=dict(color='#F79500')
-        ),
-        xaxis={'title': f'Mean {selected_field.replace("_", " ")}'},
+    return fig
 
-    )
-    return go.Figure(data=[trace], layout=layout)
 
 
 # Callbacks for updating the occupation names in the left and right side blocks
