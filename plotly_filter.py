@@ -10,7 +10,7 @@ import plotly.express as px
 app = dash.Dash(__name__)
 df = pd.read_csv('filled_data.csv')
 income_bins = [0, 10000, 20000, 30000, 50000, 70000]
-income_labels = ['0-10000', '10000-20000', '30000-50000', '50000-70000', '70000+']
+income_labels = ['0-10k', '10k-20k', '30k-50k', '50k-70k', '70k+']
 df['Grouped_Annual_Income'] = pd.cut(df['Annual_Income'], bins=income_bins, labels=income_labels)
 
 age_bins = [0, 20, 35, 50, 75]
@@ -371,37 +371,19 @@ def update_scatterplot_left(x_value, y_value, category, left_occupation):
     else:
         filtered_df = df[df[category] == left_occupation]
 
-    # Define the color and marker mapping
-    color_mapping = {'0-10000': '#b0d767', '10000-20000': '#da8ec0', '30000-50000': '#f9da56', '50000-70000': '#e0c59a',
-                     '70000+': '#b3b3b3'}
-    marker_mapping = {'0-20': 'circle', '20-35': 'cross', '35-50': 'diamond', '50-75': 'star'}
 
-    # Create a Plotly figure
-    fig = go.Figure()
-
-    # Iterate through unique combinations of age and income groups
-    for income_Group in color_mapping:
-        for age_Group in marker_mapping:
-            subset_df = filtered_df[
-                (filtered_df['Grouped_Annual_Income'] == income_Group) & (filtered_df['Grouped_Age'] == age_Group)]
-
-            fig.add_trace(go.Scatter(
-                x=subset_df[x_value],
-                y=subset_df[y_value],
-                mode="markers",
-                marker=dict(color=color_mapping[income_Group], symbol=marker_mapping[age_Group], size=10),
-                name=f"{income_Group} - {age_Group}"
-            ))
-
+    fig = px.scatter(filtered_df, x=x_value, y=y_value, color='Grouped_Annual_Income', symbol='Grouped_Age')
+    fig.update_traces(marker_size=4, marker_opacity=0.5)
 
     # Update layout
     fig.update_layout(title='Scatter Plot',
                       xaxis_title=x_value,
                       yaxis_title=y_value,
                       legend_title='Income - Age',
-                      legend_title_font=dict(size=14))
+                      legend_title_font=dict(size=12))
 
     return fig
+
 
 
 # Callback to update the first barplot for the left side
@@ -417,29 +399,28 @@ def update_left_side_first_barplot(category, left_occupation):
     else:
         filtered_df = df[df[category] == left_occupation]
 
-        # Define the color mapping
-        color_mapping = {'0-10000': '#b0d767', '10000-20000': '#da8ec0', '30000-50000': '#f9da56',
-                         '50000-70000': '#e0c59a', '70000+': '#b3b3b3'}
+    # Define the color mapping
+    color_mapping = {'0-10k': '#b0d767', '10k-20k': '#da8ec0', '30k-50k': '#f9da56',
+                     '50k-70k': '#e0c59a', '70k+': '#b3b3b3'}
 
-        # Create histogram
-        fig = px.histogram(filtered_df, x='Grouped_Annual_Income', color='Grouped_Annual_Income',
-                           color_discrete_map=color_mapping,
-                           category_orders={
-                               'Grouped_Annual_Income': ['0-10000', '10000-20000', '30000-50000', '50000-70000',
-                                                         '70000+']},
-                           labels={'Grouped_Annual_Income': 'Income Group', 'count': 'Frequency'})
+    # Create histogram
+    fig = px.histogram(filtered_df, x='Grouped_Annual_Income', color='Grouped_Annual_Income',
+                       category_orders={
+                           'Grouped_Annual_Income': ['0-10k', '10k-20k', '30k-50k', '50k-70k',
+                                                     '70k+']},
+                       labels={'Grouped_Annual_Income': 'Income Group', 'count': 'Frequency'})
 
-        # Update layout
-        fig.update_layout(title='Income Groups Frequency',
-                          xaxis_title='Income Group',
-                          yaxis_title='Frequency',
-                          showlegend=False)
+    # Update layout
+    fig.update_layout(title='Income Groups Frequency',
+                      xaxis_title='Income Group',
+                      yaxis_title='Frequency',
+                      showlegend=False)
 
-        return fig
-
+    return fig
 
 
-# Callback to update the first barplot for the left side
+
+# Callback to update the second barplot for the left side
 @app.callback(
     Output('left-side-second-barplot', 'figure'),
     [Input('category-dropdown', 'value'),
@@ -460,7 +441,6 @@ def update_left_side_second_barplot(category, left_occupation):
     fig = px.scatter(age_group_freq, x='Grouped_Age', y='Frequency',
                      size_max=15,
                      symbol='Grouped_Age',
-                     symbol_sequence=['circle', 'cross', 'diamond', 'star'],
                      labels={'Grouped_Age': 'Age Group', 'Frequency': 'Frequency'},
                      category_orders={'Grouped_Age': ['0-20', '20-35', '35-50', '50-75']})
 
@@ -484,42 +464,22 @@ def update_left_side_second_barplot(category, left_occupation):
      Input('category-dropdown', 'value'),
      Input('second-occupation-dropdown', 'value')]
 )
-def update_scatterplot_left(x_value, y_value, category, right_occupation):
+def update_scatterplot_right(x_value, y_value, category, right_occupation):
     # Filter database based on chosen demographic
     if category == 'Loan_Type':
         filtered_df = df[df[right_occupation] == 1]
     else:
         filtered_df = df[df[category] == right_occupation]
 
-    # Define the color and marker mapping
-    color_mapping = {'0-10000': '#b0d767', '10000-20000': '#da8ec0', '30000-50000': '#f9da56', '50000-70000': '#e0c59a',
-                     '70000+': '#b3b3b3'}
-    marker_mapping = {'0-20': 'circle', '20-35': 'cross', '35-50': 'diamond', '50-75': 'star'}
-
-    # Create a Plotly figure
-    fig = go.Figure()
-
-    # Iterate through unique combinations of age and income groups
-    for income_Group in color_mapping:
-        for age_Group in marker_mapping:
-            subset_df = filtered_df[
-                (filtered_df['Grouped_Annual_Income'] == income_Group) & (filtered_df['Grouped_Age'] == age_Group)]
-
-            fig.add_trace(go.Scatter(
-                x=subset_df[x_value],
-                y=subset_df[y_value],
-                mode="markers",
-                marker=dict(color=color_mapping[income_Group], symbol=marker_mapping[age_Group], size=10),
-                name=f"{income_Group} - {age_Group}"
-            ))
-
+    fig = px.scatter(filtered_df, x=x_value, y=y_value, color='Grouped_Annual_Income', symbol='Grouped_Age')
+    fig.update_traces(marker_size=4, marker_opacity=0.5)
 
     # Update layout
     fig.update_layout(title='Scatter Plot',
                       xaxis_title=x_value,
                       yaxis_title=y_value,
                       legend_title='Income - Age',
-                      legend_title_font=dict(size=14))
+                      legend_title_font=dict(size=12))
 
     return fig
 
@@ -530,42 +490,41 @@ def update_scatterplot_left(x_value, y_value, category, right_occupation):
     [Input('category-dropdown', 'value'),
      Input('second-occupation-dropdown', 'value')]
 )
-def update_left_side_first_barplot(category, right_occupation):
+def update_right_side_first_barplot(category, right_occupation):
     # Filter database based on chosen demographic
     if category == 'Loan_Type':
         filtered_df = df[df[right_occupation] == 1]
     else:
         filtered_df = df[df[category] == right_occupation]
 
-        # Define the color mapping
-        color_mapping = {'0-10000': '#b0d767', '10000-20000': '#da8ec0', '30000-50000': '#f9da56',
-                         '50000-70000': '#e0c59a', '70000+': '#b3b3b3'}
+    # Define the color mapping
+    color_mapping = {'0-10k': '#b0d767', '10k-20k': '#da8ec0', '30k-50k': '#f9da56',
+                     '50k-70k': '#e0c59a', '70k+': '#b3b3b3'}
 
-        # Create histogram
-        fig = px.histogram(filtered_df, x='Grouped_Annual_Income', color='Grouped_Annual_Income',
-                           color_discrete_map=color_mapping,
-                           category_orders={
-                               'Grouped_Annual_Income': ['0-10000', '10000-20000', '30000-50000', '50000-70000',
-                                                         '70000+']},
-                           labels={'Grouped_Annual_Income': 'Income Group', 'count': 'Frequency'})
+    # Create histogram
+    fig = px.histogram(filtered_df, x='Grouped_Annual_Income', color='Grouped_Annual_Income',
+                       category_orders={
+                           'Grouped_Annual_Income': ['0-10k', '10k-20k', '30k-50k', '50k-70k',
+                                                     '70k+']},
+                       labels={'Grouped_Annual_Income': 'Income Group', 'count': 'Frequency'})
 
-        # Update layout
-        fig.update_layout(title='Income Groups Frequency',
-                          xaxis_title='Income Group',
-                          yaxis_title='Frequency',
-                          showlegend=False)
+    # Update layout
+    fig.update_layout(title='Income Groups Frequency',
+                      xaxis_title='Income Group',
+                      yaxis_title='Frequency',
+                      showlegend=False)
 
-        return fig
-
+    return fig
 
 
-# Callback to update the first barplot for the right side
+
+# Callback to update the second barplot for the right side
 @app.callback(
     Output('right-side-second-barplot', 'figure'),
     [Input('category-dropdown', 'value'),
      Input('second-occupation-dropdown', 'value')]
 )
-def update_left_side_second_barplot(category, right_occupation):
+def update_right_side_second_barplot(category, right_occupation):
     # Filter database based on chosen demographic
     if category == 'Loan_Type':
         filtered_df = df[df[right_occupation] == 1]
@@ -580,7 +539,6 @@ def update_left_side_second_barplot(category, right_occupation):
     fig = px.scatter(age_group_freq, x='Grouped_Age', y='Frequency',
                      size_max=15,
                      symbol='Grouped_Age',
-                     symbol_sequence=['circle', 'cross', 'diamond', 'star'],
                      labels={'Grouped_Age': 'Age Group', 'Frequency': 'Frequency'},
                      category_orders={'Grouped_Age': ['0-20', '20-35', '35-50', '50-75']})
 
