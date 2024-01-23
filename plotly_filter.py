@@ -489,6 +489,7 @@ def update_left_side_first_second_barplot(category, left_demographic, selected_d
 )
 def update_scatterplot_right(x_value, y_value, category, right_occupation):
     # Filter database based on chosen demographic
+    # yes
     if category == 'Loan_Type':
         filtered_df = df[df[right_occupation] == 1]
     else:
