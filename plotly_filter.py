@@ -64,6 +64,10 @@ left_second_barplot = go.Figure()
 right_first_barplot = go.Figure()
 right_second_barplot = go.Figure()
 
+scatterplot_columns = ['Grouped_Annual_Income', 'Grouped_Age', 'Occupation']
+scatterplot_columns += loan_types
+scatterplot_columns += fields
+
 app.layout = html.Div([
     html.Div([
         html.H1("Credit Score Demographic Exploratory for Marketing", style={'textAlign': 'center',
@@ -354,36 +358,6 @@ def get_options_based_on_category(selected_category):
         return []
 
 
-# Callback to update the scatterplot for the left side
-@app.callback(
-    Output('left-side-scatterplot', 'figure'),
-    [Input('left-side-select-x-dropdown', 'value'),
-     Input('left-side-select-y-dropdown', 'value'),
-     Input('category-dropdown', 'value'),
-     Input('first-demographic-dropdown', 'value')]
-)
-def update_scatterplot_left(x_value, y_value, category, left_occupation):
-    # Filter database based on chosen demographic
-    if category == 'Loan_Type':
-        filtered_df = df[df[left_occupation] == 1]
-    else:
-        filtered_df = df[df[category] == left_occupation]
-
-    fig = px.scatter(filtered_df, x=x_value, y=y_value,
-                     color='Grouped_Annual_Income', symbol='Grouped_Age',
-                     custom_data=['Grouped_Annual_Income', 'Grouped_Age'])
-    fig.update_traces(marker_size=4, marker_opacity=0.5)
-
-    # Update layout
-    fig.update_layout(title='Scatter Plot',
-                      xaxis_title=x_value,
-                      yaxis_title=y_value,
-                      legend_title='Income - Age',
-                      legend_title_font=dict(size=12))
-
-    return fig
-
-
 # Callback to update the first barplot for the left side
 def create_first_barplot(filtered_df):
     # Define the color mapping
@@ -446,6 +420,61 @@ def create_barplot_filtered_df(category, demographic, selected_data):
     return filtered_df
 
 
+# Callback to update the scatterplot for the left side
+@app.callback(
+    Output('left-side-scatterplot', 'figure'),
+    [Input('left-side-select-x-dropdown', 'value'),
+     Input('left-side-select-y-dropdown', 'value'),
+     Input('category-dropdown', 'value'),
+     Input('first-demographic-dropdown', 'value'),
+     Input('left-side-first-barplot', 'selectedData'),
+     Input('left-side-second-barplot', 'selectedData')]
+)
+def update_scatterplot_left(x_value, y_value, category, left_demographic, first_barplot_data, second_barplot_data):
+    # Filter database based on chosen demographic
+    if category == 'Loan_Type':
+        filtered_df = df[df[left_demographic] == 1]
+    else:
+        filtered_df = df[df[category] == left_demographic]
+
+    fig = px.scatter(filtered_df, x=x_value, y=y_value,
+                     color='Grouped_Annual_Income', symbol='Grouped_Age',
+                     custom_data=scatterplot_columns)
+    fig.update_traces(marker_size=4, marker_opacity=0.5)
+
+    # Update layout
+    fig.update_layout(title='Scatter Plot',
+                      xaxis_title=x_value,
+                      yaxis_title=y_value,
+                      legend_title='Income - Age',
+                      legend_title_font=dict(size=12))
+
+    if (first_barplot_data and first_barplot_data['points']) or (second_barplot_data and second_barplot_data['points']):
+        incomes = []
+        ages = []
+        groups = []
+        if second_barplot_data is not None:
+            for bar in second_barplot_data['points']:
+                ages.append(bar['x'])
+        else:
+            ages = age_labels.copy()
+        if first_barplot_data is not None:
+            for bar in first_barplot_data['points']:
+                incomes.append(bar['x'])
+        else:
+            incomes = income_labels.copy()
+
+        for income in incomes:
+            for age in ages:
+                groups.append(f"{income}, {age}")
+        fig.for_each_trace(
+            lambda trace: trace.update(opacity=1) if trace.name in groups else trace.update(opacity=0))
+    else:
+        fig.update_traces(opacity=1)
+
+    return fig
+
+
 @app.callback(
     [Output('left-side-first-barplot', 'figure'),
      Output('left-side-second-barplot', 'figure')],
@@ -460,23 +489,6 @@ def update_left_side_first_second_barplot(category, left_demographic, selected_d
     left_second_barplot = create_second_barplot(filtered_df)
 
     return left_first_barplot, left_second_barplot
-
-
-# @app.callback(
-#     [Output('left-side-first-barplot', 'figure'),
-#      Output('left-side-second-barplot', 'figure')],
-#     [Input('left-side-scatterplot', 'selectedData'),
-#     Input('first-demographic-dropdown', 'value')]
-# )
-# def update_first_and_second_bar_plot_left(selected_data, left_occupation):
-#     if selected_data is None:
-#         return left_first_barplot, left_second_barplot
-#     print(type(selected_data))
-#     print(selected_data['points'])
-#     selected_labels = [point['text'] for point in selected_data.values()]
-#     print(selected_labels)
-#     # filtered_df = df[df[left_occupation].isin(selected_labels)]
-#     return left_first_barplot, left_second_barplot
 
 
 # Callback to update the scatterplot for the left side
@@ -497,7 +509,7 @@ def update_scatterplot_right(x_value, y_value, category, right_occupation):
 
     fig = px.scatter(filtered_df, x=x_value, y=y_value,
                      color='Grouped_Annual_Income', symbol='Grouped_Age',
-                     custom_data=['Grouped_Annual_Income', 'Grouped_Age'])
+                     custom_data=scatterplot_columns)
     fig.update_traces(marker_size=4, marker_opacity=0.5)
 
     # Update layout
@@ -545,26 +557,66 @@ def update_occupation_names(first_occupation, second_occupation):
      Output('pcp-label', 'children')],
     [Input('first-demographic-dropdown', 'value'),
      Input('second-demographic-dropdown', 'value'),
-     Input('category-dropdown', 'value')]
+     Input('category-dropdown', 'value'),
+     Input('left-side-scatterplot', 'selectedData'),
+     Input('right-side-scatterplot', 'selectedData')]
 )
-def update_output(first_occupation, second_occupation, selected_category):
+def update_output(left_demographic, right_demographic, selected_category, left_scatter_data, right_scatter_data):
     if any(item is None for item in
-           [first_occupation, second_occupation, selected_category]):
+           [left_demographic, right_demographic, selected_category]):
         return go.Figure(), go.Figure()
     # Convert single selected values to lists
-    selected_values = [first_occupation] if isinstance(first_occupation, str) else first_occupation
-    selected_values += [second_occupation] if isinstance(second_occupation, str) else second_occupation
+    selected_values = [left_demographic] if isinstance(left_demographic, str) else left_demographic
+    selected_values += [right_demographic] if isinstance(right_demographic, str) else right_demographic
 
     scatterpolar_middle = go.Figure()
+
+    if (left_scatter_data and left_scatter_data['points']) or (right_scatter_data and right_scatter_data['points']):
+
+        filtered_df = pd.DataFrame(columns=scatterplot_columns)
+        if left_scatter_data and left_scatter_data['points']:
+            for point in left_scatter_data['points']:
+                filtered_df = pd.concat([filtered_df, pd.DataFrame([point['customdata']],
+                                                                   columns=scatterplot_columns)]
+                                        , ignore_index=True)
+            if not (right_scatter_data and right_scatter_data['points']):
+                if selected_category == 'Loan_Type':
+                    filtered_df = pd.concat([filtered_df, df[df[right_demographic] == 1]],
+                                            join="inner")
+                else:
+                    filtered_df = pd.concat([filtered_df,
+                                            df[df[selected_category] == right_demographic]],
+                                            join="inner")
+            else:
+                for point in right_scatter_data['points']:
+                    filtered_df = pd.concat([filtered_df, pd.DataFrame([point['customdata']],
+                                                                       columns=scatterplot_columns)]
+                                            , ignore_index=True)
+        elif right_scatter_data and right_scatter_data['points']:
+            for point in right_scatter_data['points']:
+                filtered_df = pd.concat([filtered_df, pd.DataFrame([point['customdata']],
+                                                                   columns=scatterplot_columns)]
+                                        , ignore_index=True)
+            if selected_category == 'Loan_Type':
+                filtered_df = pd.concat([filtered_df, df[df[left_demographic] == 1]],
+                                        join="inner")
+            else:
+                filtered_df = pd.concat([filtered_df,
+                                         df[df[selected_category] == left_demographic]],
+                                        join="inner")
+    else:
+        filtered_df = df.copy()
+
     # Making fig1 scatterpolar
     dimensions = []
     for i, value in enumerate(selected_values):
         mean_table = []
+        if selected_category == 'Loan_Type':
+            masked_df = filtered_df[filtered_df[value] == 1]
+        else:
+            masked_df = filtered_df[filtered_df[selected_category] == value]
         for field in fields:
-            if selected_category == 'Loan_Type':
-                masked_df = df[df[value] == 1]
-            else:
-                masked_df = df[df[selected_category] == value]
+
             calculated_mean = masked_df[field].mean()
             if not math.isnan(calculated_mean):
                 mean_table.append(math.log(round(calculated_mean)))
@@ -587,26 +639,27 @@ def update_output(first_occupation, second_occupation, selected_category):
         ))
 
     masked_df = pd.DataFrame()
+    custom_color_scale = ['#0474BA', '#F79500']
+
     for field in fields:
         if selected_category == 'Loan_Type':
-            masked_df = df[(df[first_occupation] == 1) | (df[second_occupation] == 1)]
+            masked_df = filtered_df[(filtered_df[left_demographic] == 1) | (filtered_df[right_demographic] == 1)]
             masked_field = masked_df[field]
         else:
-            masked_df = df[df[selected_category].isin(selected_values)]
+            masked_df = filtered_df[filtered_df[selected_category].isin(selected_values)]
             masked_field = masked_df[field]
         dimensions.append(
             dict(range=[masked_field.min(), masked_field.max()], label=field.replace("_", " "),
                  values=masked_field))
-
     if selected_category == 'Loan_Type':
-        category_codes = masked_df[first_occupation].astype('category').cat.codes
+        category_codes = masked_df[left_demographic].astype('category').cat.codes
         pcp_plot = go.Figure(data=
         go.Parcoords(
-            line=dict(color=category_codes),
+            line=dict(color=category_codes, colorscale=custom_color_scale),
             dimensions=dimensions,
         ))
         pcp_label = ""
-        for value, code in zip(masked_df[first_occupation].unique(), category_codes):
+        for value, code in zip(masked_df[left_demographic].unique(), category_codes):
             if pcp_label != "":
                 pcp_label = pcp_label + f", {code}: {selected_values[value]}"
             else:
@@ -616,7 +669,7 @@ def update_output(first_occupation, second_occupation, selected_category):
                                         categories=masked_df[selected_category].unique()).codes
         pcp_plot = go.Figure(
             go.Parcoords(
-                line=dict(color=category_codes),
+                line=dict(color=category_codes, colorscale=custom_color_scale),
                 dimensions=dimensions,
             ))
         pcp_label = ""
