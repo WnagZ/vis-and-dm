@@ -497,15 +497,17 @@ def update_left_side_first_second_barplot(category, left_demographic, selected_d
     [Input('right-side-select-x-dropdown', 'value'),
      Input('right-side-select-y-dropdown', 'value'),
      Input('category-dropdown', 'value'),
-     Input('second-demographic-dropdown', 'value')]
+     Input('second-demographic-dropdown', 'value'),
+     Input('right-side-first-barplot', 'selectedData'),
+     Input('right-side-second-barplot', 'selectedData')     ]
 )
-def update_scatterplot_right(x_value, y_value, category, right_occupation):
+def update_scatterplot_right(x_value, y_value, category, right_demographic, first_barplot_data, second_barplot_data):
     # Filter database based on chosen demographic
     # yes
     if category == 'Loan_Type':
-        filtered_df = df[df[right_occupation] == 1]
+        filtered_df = df[df[right_demographic] == 1]
     else:
-        filtered_df = df[df[category] == right_occupation]
+        filtered_df = df[df[category] == right_demographic]
 
     fig = px.scatter(filtered_df, x=x_value, y=y_value,
                      color='Grouped_Annual_Income', symbol='Grouped_Age',
@@ -518,6 +520,29 @@ def update_scatterplot_right(x_value, y_value, category, right_occupation):
                       yaxis_title=y_value,
                       legend_title='Income - Age',
                       legend_title_font=dict(size=12))
+
+    if (first_barplot_data and first_barplot_data['points']) or (second_barplot_data and second_barplot_data['points']):
+        incomes = []
+        ages = []
+        groups = []
+        if second_barplot_data is not None:
+            for bar in second_barplot_data['points']:
+                ages.append(bar['x'])
+        else:
+            ages = age_labels.copy()
+        if first_barplot_data is not None:
+            for bar in first_barplot_data['points']:
+                incomes.append(bar['x'])
+        else:
+            incomes = income_labels.copy()
+
+        for income in incomes:
+            for age in ages:
+                groups.append(f"{income}, {age}")
+        fig.for_each_trace(
+            lambda trace: trace.update(opacity=1) if trace.name in groups else trace.update(opacity=0))
+    else:
+        fig.update_traces(opacity=1)
 
     return fig
 
