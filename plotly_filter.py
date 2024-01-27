@@ -518,7 +518,7 @@ def update_radarplot_left(category, x_value, y_value):
 
             mean_value = label_data[xy].mean()
             if not math.isnan(mean_value):
-                values.append(round(mean_value))
+                values.append(math.log(round(mean_value)))
             else:
                 values.append(None)
 
@@ -632,7 +632,7 @@ def update_radarplot_right(category, x_value, y_value):
 
             mean_value = label_data[xy].mean()
             if not math.isnan(mean_value):
-                values.append(round(mean_value))
+                values.append(math.log(round(mean_value)))
             else:
                 values.append(None)
 
