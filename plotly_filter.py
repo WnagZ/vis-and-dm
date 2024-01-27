@@ -43,7 +43,7 @@ for income_group in income_groups:
 
 loan_options = []
 loan_types = ['Payday Loan', 'Auto Loan', 'Home Equity Loan', 'Mortgage Loan', 'Student Loan', 'Personal Loan',
-              'Loan Not Specified', 'Debt Consolidation Loan', 'Credit-Builder Loan']
+              'Debt Consolidation Loan', 'Credit-Builder Loan']
 loan_types.sort()
 for loan_type in loan_types:
     loan_options.append({'label': loan_type, 'value': loan_type})
@@ -51,8 +51,6 @@ for loan_type in loan_types:
 # Options for the category filter dropdown
 category_options = [
     {'label': 'Occupation', 'value': 'Occupation'},
-    {'label': 'Age Group', 'value': 'Grouped_Age'},
-    {'label': 'Income Group', 'value': 'Grouped_Annual_Income'},
     {'label': 'Loan Type', 'value': 'Loan_Type'}
 ]
 
@@ -85,7 +83,7 @@ app.layout = html.Div([
             html.Div([
                 # Select x
                 html.Div([
-                    html.Label('Select x', style={'color': '#0474BA'}),
+                    html.Label('Select x', style={'color': 'cornflowerblue'}),
                     dcc.Dropdown(
                         id='left-side-select-x-dropdown',
                         options=[{'label': field, 'value': field} for field in fields],
@@ -95,7 +93,7 @@ app.layout = html.Div([
                 ], style={'marginRight': '20px'}),
                 # Select y
                 html.Div([
-                    html.Label('Select y', style={'color': '#F79500'}),
+                    html.Label('Select y', style={'color': 'darkblue'}),
                     dcc.Dropdown(
                         id='left-side-select-y-dropdown',
                         options=[{'label': field, 'value': field} for field in fields],
@@ -199,7 +197,7 @@ app.layout = html.Div([
             html.Div([
                 # Select x
                 html.Div([
-                    html.Label('Select x', style={'color': '#0474BA'}),
+                    html.Label('Select x', style={'color': 'orange'}),
                     dcc.Dropdown(
                         id='right-side-select-x-dropdown',
                         options=[{'label': field, 'value': field} for field in fields],
@@ -209,7 +207,7 @@ app.layout = html.Div([
                 ], style={'marginRight': '20px'}),
                 # Select y
                 html.Div([
-                    html.Label('Select y', style={'color': '#F79500'}),
+                    html.Label('Select y', style={'color': 'chocolate'}),
                     dcc.Dropdown(
                         id='right-side-select-y-dropdown',
                         options=[{'label': field, 'value': field} for field in fields],
@@ -508,7 +506,7 @@ def update_radarplot_left(category, x_value, y_value):
     fig = go.Figure()
 
     # Create traces for the selected field
-    for xy, line_color in zip([x_value, y_value], ['cyan', 'darkblue']):
+    for xy, line_color in zip([x_value, y_value], ['cornflowerblue', 'darkblue']):
         values = []
         for label in main_category_labels:
             if category == 'Loan_Type':
@@ -526,7 +524,9 @@ def update_radarplot_left(category, x_value, y_value):
             r=values,
             theta=main_category_labels,
             name=xy,
-            line=dict(color=line_color)
+            line=dict(color=line_color),
+            hovertemplate='%{r}',
+            hoverinfo="text"
         ))
 
     return fig
@@ -640,7 +640,9 @@ def update_radarplot_right(category, x_value, y_value):
             r=values,
             theta=main_category_labels,
             name=xy,
-            line=dict(color=line_color)
+            line=dict(color=line_color),
+            hovertemplate='%{r}',
+            hoverinfo="text"
         ))
 
     return fig
@@ -722,8 +724,8 @@ def update_output(left_demographic, right_demographic, selected_category, left_s
             masked_df = filtered_df[filtered_df[value] == 1]
         else:
             masked_df = filtered_df[filtered_df[selected_category] == value]
-        for field in fields:
 
+        for field in fields:
             calculated_mean = masked_df[field].mean()
             if not math.isnan(calculated_mean):
                 mean_table.append(math.log(round(calculated_mean)))
