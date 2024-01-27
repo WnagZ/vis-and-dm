@@ -491,6 +491,47 @@ def update_left_side_first_second_barplot(category, left_demographic, selected_d
     return left_first_barplot, left_second_barplot
 
 
+# Callback to update the radarplot for the right side
+@app.callback(
+    Output('scatterpolar-left', 'figure'),
+    [Input('category-dropdown', 'value'),
+     Input('left-side-select-x-dropdown', 'value'),
+     Input('left-side-select-y-dropdown', 'value')]
+)
+def update_radarplot_left(category, x_value, y_value):
+    # Get unique labels for the main category selected in the middle
+    if category == 'Loan_Type':
+        main_category_labels = loan_types
+    else:
+        main_category_labels = df[category].unique()
+
+    fig = go.Figure()
+
+    # Create traces for the selected field
+    for xy, line_color in zip([x_value, y_value], ['cyan', 'darkblue']):
+        values = []
+        for label in main_category_labels:
+            if category == 'Loan_Type':
+                label_data = df[df[label] == 1]
+            else:
+                label_data = df[df[category] == label]
+
+            mean_value = label_data[xy].mean()
+            if not math.isnan(mean_value):
+                values.append(round(mean_value))
+            else:
+                values.append(None)
+
+        fig.add_trace(go.Scatterpolar(
+            r=values,
+            theta=main_category_labels,
+            name=xy,
+            line=dict(color=line_color)
+        ))
+
+    return fig
+
+
 # Callback to update the scatterplot for the left side
 @app.callback(
     Output('right-side-scatterplot', 'figure'),
@@ -499,7 +540,7 @@ def update_left_side_first_second_barplot(category, left_demographic, selected_d
      Input('category-dropdown', 'value'),
      Input('second-demographic-dropdown', 'value'),
      Input('right-side-first-barplot', 'selectedData'),
-     Input('right-side-second-barplot', 'selectedData')     ]
+     Input('right-side-second-barplot', 'selectedData')]
 )
 def update_scatterplot_right(x_value, y_value, category, right_demographic, first_barplot_data, second_barplot_data):
     # Filter database based on chosen demographic
@@ -564,6 +605,47 @@ def update_right_side_first_second_barplot(category, right_demographic, selected
     return right_first_barplot, right_second_barplot
 
 
+# Callback to update the radarplot for the right side
+@app.callback(
+    Output('scatterpolar-right', 'figure'),
+    [Input('category-dropdown', 'value'),
+     Input('right-side-select-x-dropdown', 'value'),
+     Input('right-side-select-y-dropdown', 'value')]
+)
+def update_radarplot_right(category, x_value, y_value):
+    # Get unique labels for the main category selected in the middle
+    if category == 'Loan_Type':
+        main_category_labels = loan_types
+    else:
+        main_category_labels = df[category].unique()
+
+    fig = go.Figure()
+
+    # Create traces for the selected field
+    for xy, line_color in zip([x_value, y_value], ['orange', 'chocolate']):
+        values = []
+        for label in main_category_labels:
+            if category == 'Loan_Type':
+                label_data = df[df[label] == 1]
+            else:
+                label_data = df[df[category] == label]
+
+            mean_value = label_data[xy].mean()
+            if not math.isnan(mean_value):
+                values.append(round(mean_value))
+            else:
+                values.append(None)
+
+        fig.add_trace(go.Scatterpolar(
+            r=values,
+            theta=main_category_labels,
+            name=xy,
+            line=dict(color=line_color)
+        ))
+
+    return fig
+
+
 # Callbacks for updating the occupation names in the left and right side blocks
 @app.callback(
     [Output('left-demographic-name', 'children'),
@@ -610,7 +692,7 @@ def update_output(left_demographic, right_demographic, selected_category, left_s
                                             join="inner")
                 else:
                     filtered_df = pd.concat([filtered_df,
-                                            df[df[selected_category] == right_demographic]],
+                                             df[df[selected_category] == right_demographic]],
                                             join="inner")
             else:
                 for point in right_scatter_data['points']:
