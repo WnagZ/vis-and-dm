@@ -105,32 +105,60 @@ df = pd.read_csv(path2)
 #     df = fill_missing_values(df, col_name= i)
 
 # Step 1: Extract unique types of loans from the "Type_of_Loan" column
-unique_loan_types = set()
+# unique_loan_types = set()
+#
+# for col_str in [i for i in df["Type_of_Loan"].unique()]:
+#     types = re.split(', |and ', str(col_str))
+#     #types = str(col_str).split(', | and ')
+#     unique_loan_types.update(set(types))
+#
+# unique_loan_types.remove('')
+# unique_loan_types.remove('nan')
+# # Step 2: Convert the set to a list
+# loan_types = list(unique_loan_types)
+#
+# # Step 1: Create new columns for each type of loan
+# for loan_type in loan_types:
+#     df[loan_type] = 0
+#
+# # Step 2: Update the new columns based on the "Type_of_Loan" column
+# for index, row in df.iterrows():
+#     type_of_loans = re.split(', |and ', str(row['Type_of_Loan']))
+#     for loan_type in loan_types:
+#         if loan_type in type_of_loans:
+#             df.at[index, loan_type] = 1
+#
+# # Step 3: Drop the original "Type_of_Loan" column
+# df = df.drop('Type_of_Loan', axis=1)
+#
+# df.rename(columns = {'Not Specified':'Loan Not Specified'}, inplace = True)
 
-for col_str in [i for i in df["Type_of_Loan"].unique()]:
-    types = re.split(', |and ', str(col_str))
-    #types = str(col_str).split(', | and ')
-    unique_loan_types.update(set(types))
+# Group by Customer_ID and aggregate
+agg_df = df.groupby('Customer_ID').agg({
+    'Credit_Utilization_Ratio': 'mean',
+    'Outstanding_Debt': 'mean',
+    'Interest_Rate': 'mean',
+    'Num_of_Loan': 'mean',
+    'Delay_from_due_date': 'mean',
+    'Num_of_Delayed_Payment': 'mean',
+    'Mortgage Loan': 'max', # If any entry is 1, the max will be 1
+    'Home Equity Loan': 'max',
+    'Auto Loan': 'max',
+    'Student Loan': 'max',
+    'Personal Loan': 'max',
+    'Payday Loan': 'max',
+    'Debt Consolidation Loan': 'max',
+    'Credit-Builder Loan': 'max',
+    'Occupation': lambda x: x.iloc[-1],
+    'Age': 'max',
+    'Annual_Income': lambda x: x.iloc[-1],
+}).reset_index()
 
-unique_loan_types.remove('')
-unique_loan_types.remove('nan')
-# Step 2: Convert the set to a list
-loan_types = list(unique_loan_types)
+# Convert values to 0 or 1
+loan_columns = ['Mortgage Loan', 'Home Equity Loan', 'Auto Loan',
+                'Student Loan', 'Personal Loan', 'Payday Loan', 'Debt Consolidation Loan',
+                'Credit-Builder Loan']
 
-# Step 1: Create new columns for each type of loan
-for loan_type in loan_types:
-    df[loan_type] = 0
+agg_df[loan_columns] = (agg_df[loan_columns] > 0).astype(int)
 
-# Step 2: Update the new columns based on the "Type_of_Loan" column
-for index, row in df.iterrows():
-    type_of_loans = re.split(', |and ', str(row['Type_of_Loan']))
-    for loan_type in loan_types:
-        if loan_type in type_of_loans:
-            df.at[index, loan_type] = 1
-
-# Step 3: Drop the original "Type_of_Loan" column
-df = df.drop('Type_of_Loan', axis=1)
-
-df.rename(columns = {'Not Specified':'Loan Not Specified'}, inplace = True)
-
-df.to_csv("filled_data.csv")
+agg_df.to_csv("filled_data.csv")
