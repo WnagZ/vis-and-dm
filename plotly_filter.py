@@ -239,15 +239,16 @@ app.layout = html.Div([
         ], style={'width': '25%', 'display': 'inline-block'},
             id='right-block'),
 
-    ], id='display')
+    ], style={'display': 'flex',
+              'flexDirection': 'row', 'alignItems': 'flex-start',
+              'justifyContent': 'center'})
 ], style={'fontFamily': 'Trebuchet MS'})
 
 
 @app.callback(
     [Output('left-block', 'style'),
      Output('middle-block', 'style'),
-     Output('right-block', 'style'),
-     Output('display', 'style')],
+     Output('right-block', 'style')],
     [Input('left-side-checklist', 'value'),
      Input('right-side-checklist', 'value')]
 )
@@ -269,10 +270,7 @@ def show_sides(left_side, right_side):
             right_display = {'width': f'{side_size}%', 'display': 'flex', 'flexDirection': 'column'}
         middle_display = {'width': f'{middle_size}%', 'display': 'flex', 'flexDirection': 'column',
                           'alignItems': 'center', 'justifyContent': 'center'}
-        display = {'display': 'flex',
-                   'flexDirection': 'row', 'alignItems': 'flex-start',
-                   'justifyContent': 'center', }
-        return left_display, middle_display, right_display, display
+        return left_display, middle_display, right_display
 
 
 # Callback to dynamically update the options of the first occupation dropdown
@@ -642,7 +640,7 @@ def update_radarplot_right(category, x_value, y_value):
             name=xy,
             line=dict(color=line_color),
             hovertemplate='%{r}',
-            hoverinfo="text"
+            hoverinfo="text",
         ))
 
     return fig
@@ -733,7 +731,7 @@ def update_output(left_demographic, right_demographic, selected_category, left_s
                 mean_table.append(0)
 
         # Define color for the trace
-        trace_color = '#0474BA' if i == 0 else '#F79500'
+        trace_color = '#0474ba' if i == 0 else '#f79500'
         # Remove underscores from each string in fields
         fields_without_underscore = [x.replace('_', ' ') for x in fields]
 
@@ -746,9 +744,10 @@ def update_output(left_demographic, right_demographic, selected_category, left_s
             name=value,
             line=dict(color=trace_color)  # Set the line color
         ))
+        scatterpolar_middle.update_traces(fill='toself')
 
     masked_df = pd.DataFrame()
-    custom_color_scale = ['#0474BA', '#F79500']
+    custom_color_scale = ['rgba(4,116,186,0.2)', 'rgba(247,149,0,0.2)']
 
     for field in fields:
         if selected_category == 'Loan_Type':
